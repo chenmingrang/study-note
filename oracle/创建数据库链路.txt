@@ -1,0 +1,8 @@
+--创建数据库链路
+create [public] database LINK yj 
+connect to zzsgl
+identified by "Zzsgl*2016*htjs" 
+using '172.16.1.14_hnyj';
+
+--查询语句
+select * from  zzsgl_xt_xtsz@yj; 

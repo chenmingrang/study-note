@@ -1,0 +1,76 @@
+约束类型
+    --not null 非空
+        
+
+    --unique 唯一
+         不能重复，可以为空。
+
+
+    --primary key  主键
+         unique&not null（可以有联合主键），只能有一个主键
+
+
+
+    --foreign key 外键
+
+
+
+
+
+    --check 检查
+
+    
+
+    建表语句
+    create table goods(
+       goodsId      char(8)         primary key,--主键
+       goodsName    varchar2(30),
+       unitprice    number(10,2)    check(unitprice>0),
+       category     varchar2(8),
+       provider     varchar2(30)
+    );
+
+    create table customer(
+       customerId   char(8)           primary key,
+       name         varchar2(50)      not null,
+       address      varchar2(50)              ,
+       email        varchar2(50)      unique  ,
+       sex          char(2)           default 'M' check(sex in('F','M')),
+       cardId       char(18)          
+    );
+
+    create table purchase(
+       customerId    char(8)     references customer(customerId),
+       goodsId       char(8)     references goods(goodsId),
+       nums          number(2)   check(nums between 1 and 30)
+    );
+
+    
+    表建过后增加约束：(alter table命令)
+       --not null 需要使用modify
+       --而其他几种约束使用add
+    -- not null
+       alter table goods modify goodsName not null;
+    -- unique
+       alter table customer add constraint unique_customer_card unique(cardId);
+    -- check
+       alter table customer add constraint check_customer_address check(address in ('zhengzhou','kaifeng'));
+    
+    --删除约束
+       alter table 表名 drop constraint 约束名
+    删除主键时需设置cascade(级联操作)；
+     
+    
+    --查询当前用户的所有约束
+       select constraint_name,constraint_type,status,validated from user_constraints where table_name='GOODS';
+
+    --显示约束列
+       select column_name,position from user_cons_columns where constraint_name='约束名';
+
+
+    
+
+
+
+
+

@@ -1,0 +1,8 @@
+COMMIT COMMENT 'Transfer from 7715 to 7720'  WRITE IMMEDIATE NOWAIT;--可以记录下事务的具体内容
+
+回滚
+   Before executing an INSERT, UPDATE, or DELETE statement, the database marks an implicit savepoint (unavailable to you). 
+   If the statement fails, the database rolls back to the savepoint. 
+
+If you exit a stored subprogram with an unhandled exception, 
+PL/SQL does not assign values to OUT parameters, and does not do any rollback.

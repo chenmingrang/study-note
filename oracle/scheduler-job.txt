@@ -1,0 +1,29 @@
+begin
+  DBMS_SCHEDULER.CREATE_JOB (
+   job_name           =>  'job_test2',--job名
+   job_type           =>  'STORED_PROCEDURE',--类型
+   job_action         =>  'p_job_test',--调用的存储过程
+   start_date         =>  systimestamp,--开始时间
+   repeat_interval    =>  'FREQ=MINUTELY;INTERVAL=2;',--参见oracle官方文档
+   enabled            =>   true,--打开
+   auto_drop          =>   FALSE,
+   comments           =>  '测试job');
+end;
+
+
+--改变属性
+begin
+  dbms_scheduler.set_attribute('job_test2','repeat_interval','FREQ=MINUTELY;INTERVAL=1;');
+end;
+
+--停止job
+begin
+  dbms_scheduler.disable(name => 'job_test2',force => true);
+end;
+
+--删除job
+begin
+  dbms_scheduler.drop_job( job_name => 'job_test2', force => true);
+end;
+
+--详情参见 dbms_scheduler

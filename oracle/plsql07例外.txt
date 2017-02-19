@@ -1,0 +1,94 @@
+********************************************pl/sql例外*****************************************
+
+   --预定义例外（系统例外）20多个
+   --非预定义例外
+   --自定义例外
+
+   ***************************预定义例外**************************
+     --no_data_found
+     create or replace procedure p_exception_test(
+         i_empno in varchar2,
+	 o_ename out varchar2
+     ) is 
+     begin
+        select ename into o_ename from emp where empno=i_empno;
+        dbms_output.put_line('ename: '||o_ename);
+	--添加例外处理
+        exception
+	    --预定义例外
+	    when no_data_found then
+	    dbms_output.put_line('输入的编号不存在！');
+     end;
+    
+     --case_not_found;
+       create or replace procedure p_exception_test2(
+          i_empno in varchar2
+       ) is
+          v_sal emp.sal%type;
+       begin
+           select sal into v_sal from emp where empno=i_empno;
+	   case 
+	      when v_sal < 1000 then
+	        update emp set sal=sal+100 where empno=i_empno;
+	      when v_sal <2000 then
+	        update emp set sal=sal+200 where empno=i_empno;
+           end case;
+	   
+	   exception 
+	      when case_not_found then
+	      dbms_output.put_line('case语句没有与'||v_sal||'相匹配的条件');
+       end;
+
+       --cursor_already_open 游标已经打开
+       --dup_val_on_index   在唯一索引上重复添加值
+       --invalid_cursor     当视图在不合法的游标上执行操作时，会触发该例外
+       --invalid_number     输入数据有误(类型错误)
+       --too_many_rows      执行select into 到单个变量 语句时返回多行记录 
+       --zero_divide        除数为0
+       --value_error        变量长度不够
+       
+  ***************************其他预定义例外*******************************
+
+      --login_denide             登录被拒绝
+      --not_logged_on            未登录进行操作
+      --timeout_on_resource      在等待资源时，出现超时就触发该例外
+
+
+
+  ****************************自定义例外************************************
+     更新一个不存在的员工薪水时，本身是不会抛例外的
+     --案例
+     
+     create or replace procedure p_exception_test3(
+        i_empno in number
+     )is
+     --定义一个例外
+     myexc exception;
+     begin
+        update emp set sal=sal+1000 where empno=i_empno;
+	--表示更新没有成功
+	if sql%notfound then
+	  raise myexc;
+	end if;
+	exception
+	   when myexc then
+	   dbms_output.put_line('没有更新任何用户！');
+     end;
+     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

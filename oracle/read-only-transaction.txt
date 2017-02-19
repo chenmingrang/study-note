@@ -1,0 +1,43 @@
+During a read-only transaction, all queries refer to the same snapshot of the database,
+providing a multi-table, multi-query, read-consistent view. 
+Other users can continue to query or update data as usual.
+A commit or rollback ends the transaction. 
+In Example：a store manager uses a read-only transaction to gather order totals for the day,
+            the past week, and the past month.
+            The totals are unaffected by other users updating the database during the transaction.
+
+
+DECLARE
+   daily_order_total   NUMBER(12,2);
+   weekly_order_total  NUMBER(12,2); 
+   monthly_order_total NUMBER(12,2);
+BEGIN
+   COMMIT; -- ends previous transaction
+   SET TRANSACTION READ ONLY NAME 'Calculate Order Totals';
+   SELECT SUM (order_total) INTO daily_order_total FROM orders
+     WHERE order_date = SYSDATE;
+   SELECT SUM (order_total) INTO weekly_order_total FROM orders
+     WHERE order_date = SYSDATE - 7;
+   SELECT SUM (order_total) INTO monthly_order_total FROM orders
+     WHERE order_date = SYSDATE - 30;
+   COMMIT; -- ends read-only transaction
+END;
+
+
+Only the SELECT INTO, OPEN, FETCH, CLOSE, LOCK TABLE, COMMIT, and ROLLBACK statements are allowed in a read-only transaction.
+Queries cannot be FOR UPDATE.
+
+
+Autonomous Transactions
+PRAGMA AUTONOMOUS_TRANSACTION;
+自主事务是由另一个事务（主事务）启动的独立事务。 自主事务执行SQL操作并提交或回滚，而不提交或回滚主事务。
+Comparison of Autonomous Transactions and Nested Transactions
+Although an autonomous transaction is started by another transaction, it is not a nested transaction:
+
+It does not share transactional resources (such as locks) with the main transaction.
+
+It does not depend on the main transaction. For example, if the main transaction rolls back, nested transactions roll back, but autonomous transactions do not.
+
+Its committed changes are visible to other transactions immediately. (A nested transaction's committed changes are not visible to other transactions until the main transaction commits.)
+
+Exceptions raised in an autonomous transaction cause a transaction-level rollback, not a statement-level rollback.

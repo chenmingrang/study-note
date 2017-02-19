@@ -1,0 +1,80 @@
+--改变系统日期转化格式
+ALTER SESSION SET NLS_DATE_FORMAT='"'' OR 1=''1"';
+ALTER SESSION SET NLS_DATE_FORMAT='"'' OR 1=''1''--"';查出所有结果
+
+declare
+  r_emp emp%rowtype;
+  c_emp  sys_refcursor;
+  sql_stmt varchar2(200) :='select * from emp where empno = 22 and hiredate > ''' || (sysdate-3000) ||'''';  
+begin
+  dbms_output.put_line(sql_stmt);
+  open c_emp for sql_stmt;
+  loop
+    fetch c_emp into r_emp;
+    exit when c_emp%notfound;
+    dbms_output.put_line(r_emp.ename);
+   end loop;
+  dbms_output.put_line(c_emp%rowcount);
+  close c_emp;
+  --调用之前 先执行
+  --ALTER SESSION SET NLS_DATE_FORMAT='"'' OR 1=''1"';
+  --pa_against_injection.p_getEmp(i_days =>12847 , i_sal =>1000 );
+end;
+/
+
+--查询的sql语句
+select * from emp where empno = 22 and hiredate > '' OR 1='1'
+
+
+
+
+/********************************************************避免此种类型的sql注入***********************************************/
+ /*
+       调用之前
+      ALTER SESSION SET NLS_DATE_FORMAT='"'' OR 1=''1"';
+*/
+/************************************存储过程***********************************************************/
+     procedure p_getEmp(
+       i_days   number,
+       i_sal    emp.sal%type
+    ) is
+       r_emp   emp%rowtype;
+       v_sql_stmt varchar2(200);
+       c_emp   sys_refcursor;
+    begin
+       v_sql_stmt := 'select * from emp where sal > '|| i_sal ||'and hiredate > date '''
+                     ||to_char(sysdate-i_days,'yyyy-mm-dd')||'''';
+       open c_emp for v_sql_stmt;
+       loop 
+         fetch c_emp into r_emp;
+         exit when c_emp%notfound;
+         dbms_output.put_line('ename='''||r_emp.ename||''';sal='''
+                               ||r_emp.sal||''';hiredate='''||to_char(r_emp.hiredate,'yyyy-mm-dd')||'''');
+       end loop;
+       close c_emp;
+    end p_getEmp;
+
+
+/******************************调用***************************************************************/
+declare
+   days number(7) :=13098;
+   sal  emp.sal%type :=1000;
+begin
+   pa_against_injection.p_getEmp(i_days => days, i_sal =>sal);
+end;
+/
+
+/****************************result***********************************/
+select * from emp where sal > 1000and hiredate > date '1981-02-20'
+ename='WARD';sal='1250';hiredate='1981-02-22'
+ename='JONES';sal='22975';hiredate='1981-04-02'
+ename='MARTIN';sal='1250';hiredate='1981-09-28'
+ename='BLAKE';sal='2850';hiredate='1981-05-01'
+ename='CLARK';sal='2450';hiredate='1981-06-09'
+ename='SCOTT';sal='21000';hiredate='1987-04-19'
+ename='KING';sal='57244';hiredate='1981-11-17'
+ename='TURNER';sal='1500';hiredate='1981-09-08'
+ename='ADAMS';sal='1100';hiredate='1987-05-23'
+ename='FORD';sal='3000';hiredate='1981-12-03'
+ename='MILLER';sal='1301';hiredate='1982-01-23'
+PL/SQL procedure successfully completed

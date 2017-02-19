@@ -1,0 +1,332 @@
+ ****************************************情况1************************************
+ DECLARE
+   grade CHAR(1);
+ BEGIN
+      grade := 'r';
+    
+     CASE grade
+        WHEN 'A' THEN DBMS_OUTPUT.PUT_LINE('Excellent');
+        WHEN 'B' THEN DBMS_OUTPUT.PUT_LINE('Very Good');
+        WHEN 'C' THEN DBMS_OUTPUT.PUT_LINE('Good');
+        WHEN 'D' THEN DBMS_OUTPUT.PUT_LINE('Fair');
+        WHEN 'F' THEN DBMS_OUTPUT.PUT_LINE('Poor');
+        ELSE DBMS_OUTPUT.PUT_LINE('No such grade');
+     END CASE;
+   END;
+
+   --输出 'No such grade'
+
+
+
+****************************************情况2************************************
+  DECLARE
+    grade CHAR(1);
+  BEGIN
+      grade := 'r';
+     CASE grade
+        WHEN 'A' THEN DBMS_OUTPUT.PUT_LINE('Excellent');
+        WHEN 'B' THEN DBMS_OUTPUT.PUT_LINE('Very Good');
+        WHEN 'C' THEN DBMS_OUTPUT.PUT_LINE('Good');
+        WHEN 'D' THEN DBMS_OUTPUT.PUT_LINE('Fair');
+        WHEN 'F' THEN DBMS_OUTPUT.PUT_LINE('Poor');
+     END CASE;
+   END;
+
+   --结果：CASE 语句时未找到 CASE,
+   --The ELSE clause is optional. 
+   --However, if you omit the ELSE clause, PL/SQL adds the following implicit ELSE clause:
+     ELSE RAISE CASE_NOT_FOUND;
+
+
+ *************************************情况3*********************************************
+  DECLARE
+    grade CHAR(1);
+  BEGIN
+      grade := 'r';
+     CASE grade
+        WHEN 'A' THEN DBMS_OUTPUT.PUT_LINE('Excellent');
+        WHEN 'B' THEN DBMS_OUTPUT.PUT_LINE('Very Good');
+        WHEN 'C' THEN DBMS_OUTPUT.PUT_LINE('Good');
+        WHEN 'D' THEN DBMS_OUTPUT.PUT_LINE('Fair');
+        WHEN 'F' THEN DBMS_OUTPUT.PUT_LINE('Poor');
+     END CASE;
+
+     exception
+        when CASE_NOT_FOUND then
+	dbms_output.put_line('case执行完毕未找到case');
+   END;
+   
+   --结果：case执行完毕未找到case；
+
+
+
+   *******************************case when的另一种情况*********************************************
+   DECLARE
+      grade CHAR(1);
+    BEGIN
+      grade := 'B';
+    
+      CASE
+        WHEN grade = 'A' THEN DBMS_OUTPUT.PUT_LINE('Excellent');
+        WHEN grade = 'B' THEN DBMS_OUTPUT.PUT_LINE('Very Good');
+        WHEN grade = 'C' THEN DBMS_OUTPUT.PUT_LINE('Good');
+        WHEN grade = 'D' THEN DBMS_OUTPUT.PUT_LINE('Fair');
+        WHEN grade = 'F' THEN DBMS_OUTPUT.PUT_LINE('Poor');
+        ELSE DBMS_OUTPUT.PUT_LINE('No such grade');
+     END CASE;
+   END;
+
+
+
+   ****************************************if elsif*************************************************
+
+   IF condition1 THEN statement1;
+       ELSE 
+          IF condition2 THEN statement2;
+          ELSE 
+	     IF condition3 THEN statement3; 
+	  END IF;
+       END IF;
+   END IF;
+
+  IF condition1 THEN statement1;
+     ELSIF condition2 THEN statement2;
+     ELSIF condition3 THEN statement3;
+  END IF;
+
+--These statements are logically equivalent, but the second statement makes the logic clearer.
+
+
+
+
+*****************************************loop********************************************************8
+
+ DECLARE
+      x NUMBER := 0;
+    BEGIN
+      LOOP
+        DBMS_OUTPUT.PUT_LINE
+          ('Inside loop:  x = ' || TO_CHAR(x));
+    
+        x := x + 1;
+    
+        IF x > 3 THEN
+          EXIT;
+        END IF;
+      END LOOP;
+      -- After EXIT, control resumes here
+    
+      DBMS_OUTPUT.PUT_LINE
+        (' After loop:  x = ' || TO_CHAR(x));
+    END;
+   /
+Inside loop:  x = 0
+Inside loop:  x = 1
+Inside loop:  x = 2
+Inside loop:  x = 3
+After loop:  x = 4
+
+   --exit 退出loop
+
+
+*********************************************多重循环***************************************
+   DECLARE
+     s  PLS_INTEGER := 0;
+     i  PLS_INTEGER := 0;
+     j  PLS_INTEGER;
+   BEGIN
+     <<outer_loop>>
+     LOOP
+       i := i + 1;
+       j := 0;
+       <<inner_loop>>
+       LOOP
+         j := j + 1;
+         s := s + i * j; -- Sum several products
+         EXIT inner_loop WHEN (j > 5);
+         EXIT outer_loop WHEN ((i * j) > 15);
+       END LOOP inner_loop;
+     END LOOP outer_loop;
+     DBMS_OUTPUT.PUT_LINE
+       ('The sum of products equals: ' || TO_CHAR(s));
+   END;
+
+   --while loop 可能一次都不执行
+   WHILE condition LOOP
+        sequence_of_statements
+   END LOOP;
+   
+  
+   --至少执行一次
+   LOOP
+      sequence_of_statements
+      EXIT WHEN boolean_expression
+   END LOOP;
+
+******************************************************for loop循环*******************************************
+
+   --for-loop Reverse 反向循环
+      for i in [Reverse] lower_bound(整数) .. upper_bound(整数) loop
+         sequence_of_statements
+      end loop;
+
+      *******Inside a FOR loop, the counter can be read but cannot be changed;计数器i只能读，不能改
+      *******A useful variation of the FOR loop uses a SQL query instead of a range of integers. 
+             This technique lets you run a query and process all the rows of the result set with straightforward syntax
+      *******The magnitude range of a PLS_INTEGER is -2147483648 to 2147483647
+
+      
+	    DECLARE
+	      i NUMBER := 5;
+	    BEGIN
+	      FOR i IN 1..3 LOOP
+	        DBMS_OUTPUT.PUT_LINE
+	          ('Inside loop, i is ' || TO_CHAR(i));
+	      END LOOP;
+	    
+	      DBMS_OUTPUT.PUT_LINE
+	         ('Outside loop, i is ' || TO_CHAR(i));
+	     END;
+	   /
+	Inside loop, i is 1
+	Inside loop, i is 2
+	Inside loop, i is 3
+	Outside loop, i is 5
+	 
+	PL/SQL procedure successfully completed.
+
+
+            <<main>>
+	    DECLARE
+	      i NUMBER := 5;
+	    BEGIN
+	      FOR i IN 1..3 LOOP
+		DBMS_OUTPUT.PUT_LINE
+		  ('local: ' || TO_CHAR(i) || ', global: ' || TO_CHAR(main.i));
+	      END LOOP;
+	    END main;
+	   /
+	local: 1, global: 5
+	local: 2, global: 5
+	local: 3, global: 5
+	 
+	PL/SQL procedure successfully completed
+
+        
+	    BEGIN
+	    <<outer_loop>>
+	      FOR i IN 1..3 LOOP
+		<<inner_loop>>
+		FOR i IN 1..3 LOOP
+		  IF outer_loop.i = 2 THEN
+		    DBMS_OUTPUT.PUT_LINE
+		      ( 'outer: ' || TO_CHAR(outer_loop.i) || ' inner: '
+			|| TO_CHAR(inner_loop.i));
+		 END IF;
+	       END LOOP inner_loop;
+	     END LOOP outer_loop;
+	    END;
+	   /
+	outer: 2 inner: 1
+	outer: 2 inner: 2
+	outer: 2 inner: 3
+
+          --当游标中没有值时时，退出循环
+           DECLARE
+	     v_emp emp%ROWTYPE;
+	       CURSOR c1 is SELECT * FROM emp;
+	    BEGIN
+	      OPEN c1;
+	    
+	      -- Fetch entire row into v_employees record:
+	      <<outer_loop>>
+	      FOR i IN 1..10 LOOP
+	       -- Process data here
+	       dbms_output.put_line('i='||i);
+	       FOR j IN 1..10 LOOP
+		 FETCH c1 INTO v_emp;
+		 EXIT outer_loop WHEN c1%NOTFOUND;
+		 -- Process data here
+		 dbms_output.put_line('j='||j);
+		 dbms_output.put_line(v_emp.ename);
+	       END LOOP;
+	     END LOOP outer_loop;
+	   
+	     CLOSE c1;
+	   END;
+      
+
+  ***********A label can appear only before a block (as in Example 4-22) 
+               or before a statement (as in Example 4-26), not within a statement, as in Example 4-27.
+    --语句块前，执行语句前，并不能出现在执行语句中。
+    --编译出错
+    DECLARE
+      done  BOOLEAN;
+    BEGIN
+      FOR i IN 1..50 LOOP
+        IF done THEN
+          GOTO end_loop;
+        END IF;
+        <<end_loop>>
+      END LOOP;
+    END;
+
+    --编译通过
+    --eg1:
+    DECLARE
+      done  BOOLEAN;
+    BEGIN
+      FOR i IN 1..50 LOOP
+        IF done THEN
+          GOTO end_loop;
+        END IF;
+       
+      END LOOP;
+       <<end_loop>>
+       null;
+    END;
+
+    --eg2:
+    DECLARE
+      done  BOOLEAN;
+    BEGIN
+      FOR i IN 1..50 LOOP
+        IF done THEN
+          GOTO end_loop;
+        END IF;
+        <<end_loop>>
+        null;
+      END LOOP;
+    END;
+
+
+*****************************定义数组**********************************
+ DECLARE
+      TYPE staff_list IS TABLE OF emp.empno%TYPE;
+      staff  staff_list;
+      v_ename  emp.ename%TYPE;
+      v_sal  emp.sal%TYPE;
+    BEGIN
+      staff := staff_list(7839, 7788,7369,7499,7521,7566, 7654,7698);
+    
+      FOR i IN staff.FIRST .. staff.LAST LOOP
+       SELECT ename, sal INTO v_ename, v_sal
+         FROM emp
+           WHERE emp.empno = staff(i);
+   
+        DBMS_OUTPUT.PUT_LINE (TO_CHAR(staff(i))
+                              || ': '
+                              || v_ename
+                              || ', '
+                              || v_sal
+                             );
+     END LOOP;
+   END;
+
+
+
+
+
+
+
+

@@ -1,0 +1,3 @@
+gbkorcl : learn/learn  zzsgl/zzsgl
+myorcl  : fwsk/fwsk
+其他用户: system/password sys/password

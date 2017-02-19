@@ -1,0 +1,47 @@
+
+ **********************************比较*******************************
+ --相等
+    last_name1 varchar2(5)  := 'BELLO'; 
+    last_name2 varchar2(10) := 'BELLO'; 
+
+    last_name1 char(5)  := 'BELLO';--当大于5时不等，占用的空间是固定的，不够“补空”
+    last_name2 varchar2(10) := 'BELLO'; --变长
+
+   ☆☆☆☆☆☆☆☆☆
+    --If both values have data type CHAR, 
+         PL/SQL blank-pads the shorter value to the length of the longer value before comparing them
+      都是char类型再比较时，将短的字符串加长到长字符串的长度
+    last_name1 char(5)  := 'BELLO';
+    last_name2 char(10) := 'BELLO';
+
+    last_name1 char(8)  := 'BELLO'; --占用空间为8
+    last_name2 varchar2(10) := 'BELLO   ';--空间也位8
+
+
+ --不等
+    last_name1 varchar2(10)  := 'BELLO   '; 
+    last_name2 varchar2(10) := 'BELLO';
+
+
+   ☆ The largest CHAR value that you can insert into a CHAR database column is 2,000 bytes.
+
+   ☆ The largest VARCHAR2 value that you can insert into a VARCHAR2 database column is 4,000 bytes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

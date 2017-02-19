@@ -1,0 +1,24 @@
+SELECT TABLE_NAME FROM USER_TABLES WHERE NUM_ROWS=0;
+select 'alter table '||table_name||' allocate extent;' from user_tables where num_rows=0 ;
+
+
+解决方案:
+   1、最原始最笨的办法(不推荐):insert一行，再rollback或者删除就产生segment了。
+      该方法是在在空表中插入数据，再删除，则产生segment。导出时则可导出空表。
+
+
+   2.设置deferred_segment_creation 参数：
+   设置deferred_segment_creation 参数为FALSE来禁用"段推迟创建"(也就是直接创建segment)，无论是空表还是非空表，都分配segment。
+      在sqlplus中，执行如下命令：
+      SQL>alter system set deferred_segment_creation=false;
+      查看：
+      SQL>show parameter deferred_segment_creation;
+      注意：该值设置后只对后面新增的表产生作用，对之前建立的空表(已经存在的)不起作用，仍不能导出。
+      并且要重新启动数据库，让参数生效。
+
+
+   3、使用ALLOCATE EXTENT，可以导出之前已经存在的空表。
+      使用ALLOCATE EXTENT可以为数据库对象的每一张表分配Extent(注意针对每一张表，就是说一张表需要一条SQL代码)：
+      3.1 select 'alter table '||table_name||' allocate extent;' from user_tables where num_rows=0 ;
+      3.2 执行查询结果语句;
+      

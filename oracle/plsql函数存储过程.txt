@@ -1,0 +1,218 @@
+set serveroutput on
+declare
+   v_name varchar2(15);
+begin
+  execute immediate 'select ename from emp where empno=:1' into v_name using 7839;
+  dbms_output.put_line(v_name);
+end;
+
+
+declare
+   v_name varchar2(15);
+   v_sal  number(7,2);
+   v_empno number :=&no;
+begin
+  execute immediate 'select ename,sal from emp where empno=:1' into v_name,v_sal using v_empno;
+  dbms_output.put_line(v_name);
+  dbms_output.put_line(v_sal);
+end;
+
+--符合变量
+declare
+  type r1 is record(v_name varchar2(15),v_sal number(7,2));
+  r_emp r1;
+begin
+  select ename,sal into r_emp from emp where empno=&no;
+  dbms_output.put_line(r_emp.v_name);
+  dbms_output.put_line(r_emp.v_sal);
+end;
+
+
+--自动匹配类型
+declare
+   v_name emp.ename%type;
+   v_sal  emp.sal%type;
+   v_empno number :=&no;
+begin
+  execute immediate 'select ename,sal from emp where empno=:1' into v_name,v_sal using v_empno;
+  dbms_output.put_line(v_name);
+  dbms_output.put_line(v_sal);
+end;
+
+
+--rowtype
+declare
+   v_emp emp%rowtype;
+   v_empno number :=&no;
+begin
+  execute immediate 'select * from emp where empno=:1' into v_emp using v_empno;
+  dbms_output.put_line(v_emp.ename);
+  dbms_output.put_line(v_emp.sal);
+end;
+
+--游标(for循环)
+begin
+   for i in (select ename,sal from emp where deptno=10) loop
+     dbms_output.put_line('name:'||i.ename);
+     dbms_output.put_line('sal:'||i.sal);
+   end loop;
+end;
+
+
+--控制语句
+declare
+   v_deptno emp.deptno%type;
+begin
+   v_deptno :=&no;
+   if v_deptno=10 then
+      for a in (select ename,sal from emp where deptno=v_deptno) loop
+         dbms_output.put_line(a.sal ||'*1.1='||a.sal*1.1);
+      end loop;
+   elsif v_deptno=20 then
+      for a in (select ename,sal from emp where deptno=v_deptno) loop
+         dbms_output.put_line(a.sal ||'*1.2='||a.sal*1.2);
+      end loop;
+   else
+      for a in (select ename,sal from emp where deptno=v_deptno) loop
+         dbms_output.put_line(a.sal ||'*1.3='||a.sal*1.3);
+      end loop;
+   end if;
+ end;
+        
+
+***************************************函数***********************************
+
+--函数1
+create or replace function f_getsal(v_empno number)
+return number is 
+   v_sal number;
+begin
+   select sal into v_sal from emp where empno=v_empno;
+   return v_sal;
+end f_getsal;
+
+--调用
+   select f_getsal(7839) from dual;
+
+--函数2
+create or replace function f_getsal2(v_empno number)
+return varchar2 is
+   v_ename varchar2(20);
+   v_sal number(7,2);
+begin
+   select sal,ename into v_sal,v_ename from emp where empno=v_empno;
+   return v_ename || ':' || v_sal;
+end f_getsal2;
+
+--调用
+   select f_getsal2(7839) from dual;
+
+
+******************************过程***************************
+
+create or replace procedure phone(
+    vno in out varcahr2)is
+    begin
+       vno :='('||substr(vno,1,length(vno)-8 ||')-'
+          || substr(vno,-8);       
+    end phone;
+
+
+***********************************创建包******************************
+ 
+ create or replace package p_test1 is
+    function f_f1(v_empno number) return number;
+    procedure p_p1(v_empno in number);
+ end p_test1;
+
+
+ create or replace package body p_body_test
+   is
+     
+     function f_f1(v_empno number) return number 
+        is
+        v_sal emp.sal%type;
+      begin 
+         select sal into v_sal from emp where empno=v_empno;
+         return v_sal;
+      end f_f1;
+
+      procedure p_p1(
+        v_empno in number)is
+      begin
+        update emp set sal=sal+10000 where empno=v_empno;
+	commit;
+      end p_p1;
+ end p_body_test;
+
+
+**********************************触发器*************************************
+
+create or replace trigger t_test1
+   before|after| instead of.....
+begin
+   ......
+end;
+   
+   create table logTal(
+      username varchar2(20),
+      logdate  date default sysdate);
+ --eg
+   create or replace trigger t_test1
+     after logon on schema
+   begin
+     insert into logTal values (user,sysdate);
+   end;
+
+
+--eg
+    create table empsal
+      as 
+    select ename,sal osal,sal nsal
+    from emp where 1=0;
+  
+  create or replace trigger t_emp_sal
+     before insert or update or delete of
+       sal on emp for each row
+  begin
+     insert into empsal values
+      (:old.ename,:old.sal,:new.sal);
+  end;
+
+
+--替代触发
+  create or replace view v_test1
+    as 
+  select deptno,min(sal) msal from emp group by deptno;
+  
+  create or replace trigger t_view1
+     instead of insert or update or delete on v_test1
+  begin
+    update emp set sal=:old.msal+1 where sal=:old.msal;
+  end;
+
+
+
+*************************************pl/sql状态**********************************
+desc user_source;
+select * from user_source;
+desc user_objects;
+select object_name,object_type,status from user_objects;
+   --invalid 有错误
+alter procedure XXX compile;
+select text from user_source where name='对象名';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

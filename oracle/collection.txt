@@ -1,0 +1,504 @@
+*************************************example1*****************************************
+
+declare 
+  type emp_tableType is table of emp%rowtype index by pls_integer;
+  emp_tab emp_tableType;
+  emp_7839 emp%rowtype;
+begin
+  select * into emp_tab(7839) from emp where empno=7839;
+  emp_7839 :=emp_tab(7839);
+  dbms_output.put_line(emp_7839.ename);
+end;
+
+***************************************example2***************************************
+
+create package pack_emp_test is
+   type emp_list is table of emp.empno%type;
+   procedure p_raiseSal (emp_sal in emp_list);
+end pack_emp_test;
+
+
+create or replace package body pack_emp_test is
+  procedure p_raiseSal (
+    emp_sal in emp_list) 
+  is
+  begin
+    for i in emp_sal.first..emp_sal.last loop
+      update emp set sal = sal + 10000
+      where empno = emp_sal(i);
+    end loop;
+  end;
+end pack_emp_test;
+      
+--调用 
+declare 
+  good_emps pack_emp_test.emp_list;
+begin
+  good_emps :=pack_emp_test.emp_list(7839,7788,7566);
+  pack_emp_test.p_raiseSal(good_emps);
+end;
+
+
+***********************************************array***********************************
+
+
+--eg1
+declare
+  type empList is table of emp.empno%type;
+  cursor c1 is select empno from emp;
+  type saleMan is array(10) of emp%rowtype;
+  cursor c2 is select empno,ename from emp;
+  type empList2 is array(20) of c2%rowtype;
+begin
+  null;
+end;
+
+--eg2
+declare 
+  type r1 is record(
+      r_empno emp.empno%type,
+      r_ename emp.ename%type
+    );
+   type names is varray(250) of r1;
+begin
+  null;
+end;
+
+
+
+*******************************给table或是varray类型赋值******************************************
+
+--eg3
+declare 
+  type EmpList is table of emp.empno%type not null;
+  v_emp Emplist :=EmpList(7788,7839,7566);
+begin
+  v_emp(3) :=999;
+  dbms_output.put_line(v_emp(1));--7788
+  dbms_output.put_line(v_emp(3));--999
+end;
+
+--eg4
+declare 
+   type dname_var is varray(20) of varchar2(30);
+   dept_names dname_var;
+begin
+  dept_names :=dname_var('Shinpping','Sales','Finance');
+  dbms_output.put_line(dept_names(1));
+end;
+
+--eg5
+
+declare 
+  type dnames_tab is table of varchar2(30);
+  dept_names dnames_tab;
+begin
+  dept_names := dnames_tab('Shipping','Finance',NULL);
+end;
+
+--eg6 非空约束（关键字not null）
+declare 
+  type dnames_tab is table of varchar2(30) not null;
+  dept_names dnames_tab;
+begin
+  dept_names := dnames_tab('Shipping','Finance',NULL);
+end;
+
+
+--eg7(index 相当于map的key)
+declare 
+  type dnames_tab is table of varchar2(30) index by varchar2(90);
+  dept_names dnames_tab;
+begin
+  dept_names('123') :='Shipping';
+  dbms_output.put_line(dept_names('123'));
+end;
+
+
+--eg8(key不存在时)
+declare 
+  type dnames_tab is table of varchar2(30) index by varchar2(90);
+  dept_names dnames_tab;
+begin
+  dept_names('123') :='Shipping';
+  dept_names('1223') :='Shipping2';
+  dbms_output.put_line(dept_names('14423'));
+  exception
+    when no_data_found then
+      dbms_output.put_line(123);
+end;
+
+
+
+*********************************null 与 0 是两个概念************************
+
+declare
+  type dnames_var is varray(20) of varchar2(20);
+  dept_names dnames_var;
+begin
+  if dept_names is null then
+    dbms_output.put_line('Before initialization,the varray is null');
+  else
+    dbms_output.put_line('Before initialization,the avarray is not null');
+  end if;
+  dept_names :=dnames_var();--初始化
+  if dept_names is null then
+    dbms_output.put_line('After initialization,the varray is null');
+  else
+    dbms_output.put_line('After initialization,the varray is not null');
+    dbms_output.put_line('Tt has '|| dept_names.count ||' elements');
+  end if;
+end;
+
+--输出结果
+  Before initialization,the varray is null
+  After initialization,the varray is not null
+  Tt has 0 elements
+
+
+
+************************************函数返回array类型***************************
+declare
+  type sum_mutiples is table of pls_integer index by pls_integer;
+  n  pls_integer :=5; --number of multiples to sum for display
+  sn pls_integer :=10;--number of multiples to sum
+  m  pls_integer :=3; --multiple
+  function get_sum_multiples(
+    multiple in pls_integer,
+    num      in pls_integer)
+    return sum_mutiples is 
+    s sum_mutiples;
+    begin
+      for i in 1..num loop
+        s(i) := multiple * ((i*(i+1))/2);
+      end loop;
+      return s;
+    end get_sum_multiples;
+begin
+  dbms_output.put_line('Sum of first  '  || TO_CHAR(n) 
+      || '  multiples of  ' || to_char(m) ||'  is  '
+      || to_char(get_sum_multiples(m,sn)(n)));
+end;
+
+
+
+***************************Assigning Values to Collections**************************
+One collection can be assigned to another by an INSERT, UPDATE, FETCH, or SELECT
+
+declare 
+  type ename_type is varray(3) of emp.ename%type;
+  type job_type   is varray(3) of emp.job%type;
+  group1 ename_type :=ename_type('SCOTT','KING','JONES');
+  group2 ename_type :=ename_type('AWARDZ','SMITH','WARD');
+  group3 job_type :=job_type('CLERK','SALESMAN','MANAGER');
+begin
+  group1 :=group2;
+  group3 :=group2;--类型错误
+end;
+
+
+*****************************运算****************************************************
+DECLARE
+  TYPE nested_typ IS TABLE OF NUMBER;
+  nt1 nested_typ := nested_typ(1,2,3);
+  nt2 nested_typ := nested_typ(3,2,1);
+  nt3 nested_typ := nested_typ(2,3,1,3);
+  nt4 nested_typ := nested_typ(1,2,4);
+  answer nested_typ;
+-- The results might be in a different order than you expect.
+-- Do not rely on the order of elements in nested tables.
+  PROCEDURE print_nested_table(the_nt nested_typ) IS
+     output VARCHAR2(128);
+  BEGIN
+     IF the_nt IS NULL THEN
+        DBMS_OUTPUT.PUT_LINE('Results: <NULL>');
+        RETURN;
+     END IF;
+     IF the_nt.COUNT = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Results: empty set');
+        RETURN;
+     END IF;
+     FOR i IN the_nt.FIRST .. the_nt.LAST
+     LOOP
+        output := output || the_nt(i) || ' ';
+     END LOOP;
+     DBMS_OUTPUT.PUT_LINE('Results: ' || output);
+  END;
+BEGIN
+  answer := nt1 MULTISET UNION nt4; -- (1,2,3,1,2,4)
+  print_nested_table(answer);
+  answer := nt1 MULTISET UNION nt3; -- (1,2,3,2,3,1,3)
+  print_nested_table(answer);
+  answer := nt1 MULTISET UNION DISTINCT nt3; -- (1,2,3)
+  print_nested_table(answer);
+  answer := nt2 MULTISET INTERSECT nt3; -- (3,2,1)
+  print_nested_table(answer);
+  answer := nt2 MULTISET INTERSECT DISTINCT nt3; -- (3,2,1)
+  print_nested_table(answer);
+  answer := SET(nt3); -- (2,3,1)
+  print_nested_table(answer);
+  answer := nt3 MULTISET EXCEPT nt2; -- (3)
+  print_nested_table(answer);
+  answer := nt3 MULTISET EXCEPT DISTINCT nt2; -- ()
+  print_nested_table(answer);
+END;
+
+
+*********************************extend增加元素的个数***********************************
+DECLARE
+  TYPE emp_name_rec is RECORD (
+    ename        emp.ename%TYPE,
+    job          emp.job%TYPE,
+    hiredate     emp.hiredate%TYPE
+    );
+    
+-- Array type that can hold information 10 emp
+   TYPE EmpList_arr IS VARRAY(10) OF emp_name_rec;
+   SeniorSalespeople EmpList_arr;
+   
+-- Declare a cursor to select a subset of columns.
+   CURSOR c1 IS SELECT ename, job, hiredate
+     FROM emp;
+   Type NameSet IS TABLE OF c1%ROWTYPE;
+   SeniorTen NameSet;
+   EndCounter NUMBER := 10;
+   
+BEGIN
+  SeniorSalespeople := EmpList_arr();
+  SELECT ename, job, hiredate
+    BULK COLLECT INTO SeniorTen
+    FROM emp
+    WHERE job = 'SALESMAN'
+    ORDER BY hiredate;
+  IF SeniorTen.LAST > 0 THEN
+    IF SeniorTen.LAST < 10 THEN EndCounter := SeniorTen.LAST; 
+    END IF;
+    FOR i in 1..EndCounter LOOP
+      SeniorSalespeople.EXTEND(1);--增加1
+      SeniorSalespeople(i) := SeniorTen(i);
+      DBMS_OUTPUT.PUT_LINE(SeniorSalespeople(i).job || ', ' 
+       || SeniorSalespeople(i).ename || ', ' ||
+       SeniorSalespeople(i).hiredate);
+    END LOOP;
+  END IF;
+END;
+
+
+
+
+*************************************游标、table、varray使用********************************
+
+DECLARE
+  TYPE emp_name_rec is RECORD (
+    ename        emp.ename%TYPE,
+    job          emp.job%TYPE,
+    hiredate     emp.hiredate%TYPE
+    );
+    
+-- Table type that can hold information about emp
+   TYPE EmpList_tab IS TABLE OF emp_name_rec;--方案1
+   --TYPE EmpList_tab IS array(90) OF emp_name_rec;--方案2
+   --TYPE EmpList_tab IS varray(10) OF emp_name_rec;--方案3
+   SeniorSalespeople EmpList_tab;   
+   
+-- Declare a cursor to select a subset of columns.
+    --CURSOR c1 IS SELECT ename, job, hiredate FROM emp;
+    --c1 sys_refcursor;--方案1
+    EndCounter NUMBER := 10;
+    TYPE ref_c1 IS REF CURSOR;--方案2
+    c1 ref_c1; --方案2
+
+   
+BEGIN
+   OPEN c1 FOR SELECT ename, job, hiredate FROM emp 
+   WHERE job = 'SALESMAN' ORDER BY hiredate;
+
+  FETCH c1 BULK COLLECT INTO SeniorSalespeople;
+  CLOSE c1;
+
+-- for this example, display a maximum of ten emp
+  IF SeniorSalespeople.LAST > 0 THEN
+    IF SeniorSalespeople.LAST < 10 THEN
+      EndCounter := SeniorSalespeople.LAST; 
+    END IF;
+    FOR i in 1..EndCounter LOOP
+      DBMS_OUTPUT.PUT_LINE
+        (SeniorSalespeople(i).ename || ', ' 
+         || SeniorSalespeople(i).job || ', ' || SeniorSalespeople(i).hiredate);
+    END LOOP;
+  END IF;
+END;
+
+
+
+********************************nested table 比较************************************
+
+DECLARE
+   TYPE dnames_tab IS TABLE OF VARCHAR2(30);
+   dept_names1 dnames_tab :=
+     dnames_tab('Shipping','Sales','Finance','Payroll');
+   dept_names2 dnames_tab :=
+     dnames_tab('Sales','Finance','Shipping','Payroll');
+   dept_names3 dnames_tab :=
+     dnames_tab('Sales','Finance','Payroll');
+BEGIN
+-- You can use = or !=, but not < or >.
+-- These 2 are equal even though members are in different order.
+   IF dept_names1 = dept_names2 THEN
+     DBMS_OUTPUT.PUT_LINE
+      ('dept_names1 and dept_names2 have the same members.');
+   END IF;
+   IF dept_names2 != dept_names3 THEN
+      DBMS_OUTPUT.PUT_LINE
+        ('dept_names2 and dept_names3 have different members.');
+   END IF;
+END;
+
+--输出结果
+dept_names1 and dept_names2 have the same members.
+dept_names2 and dept_names3 have different members.
+
+
+
+
+**************************集合判断(Comparing Collections)******************************
+
+
+DECLARE
+  TYPE nested_typ IS TABLE OF NUMBER;
+  nt1 nested_typ := nested_typ(1,2,3);
+  nt2 nested_typ := nested_typ(3,2,1);
+  nt3 nested_typ := nested_typ(2,3,1,3);
+  --nt3 nested_typ := nested_typ();
+  nt4 nested_typ := nested_typ(1,2,4);
+  answer BOOLEAN;
+  howmany NUMBER;
+  PROCEDURE testify
+    (truth BOOLEAN DEFAULT NULL,
+     quantity NUMBER DEFAULT NULL) IS
+  BEGIN
+    IF truth IS NOT NULL THEN
+      DBMS_OUTPUT.PUT_LINE
+        (CASE truth WHEN TRUE THEN 'True' WHEN FALSE THEN 'False' END);
+    END IF;
+    IF quantity IS NOT NULL THEN
+        DBMS_OUTPUT.PUT_LINE(quantity);
+    END IF;
+  END;
+BEGIN
+  answer := nt1 IN (nt2,nt3,nt4); -- true, nt1 matches nt2
+  testify(truth => answer);
+  answer := nt1 SUBMULTISET OF nt3; -- true, all elements match
+  testify(truth => answer);
+  answer := nt1 NOT SUBMULTISET OF nt4; -- also true
+  testify(truth => answer);
+  howmany := CARDINALITY(nt3); -- number of elements in nt3
+  testify(quantity => howmany); --4
+  howmany := CARDINALITY(SET(nt3)); -- number of distinct elements
+  testify(quantity => howmany); --3
+  answer := 4 MEMBER OF nt1; -- false, no element matches
+  testify(truth => answer);
+  answer := nt3 IS A SET; -- false, nt3 has duplicates
+  testify(truth => answer);
+  answer := nt3 IS NOT A SET; -- true, nt3 has duplicates
+  testify(truth => answer);
+  answer := nt1 IS EMPTY; -- false, nt1 has some members
+  testify(truth => answer);
+END;
+
+
+
+************************************多层次数组(Multilevel VARRAY)***********************************
+
+DECLARE
+  TYPE t1 IS VARRAY(10) OF INTEGER;
+  TYPE nt1 IS VARRAY(10) OF t1; -- multilevel varray type
+  va t1 := t1(2,3,5);
+  -- initialize multilevel varray
+  nva nt1 := nt1(va, t1(55,6,73), t1(2,4), va);
+  i INTEGER;
+  va1 t1;
+BEGIN
+  -- multilevel access
+  i := nva(2)(3); -- i will get value 73
+  DBMS_OUTPUT.PUT_LINE('I = ' || i);--73
+  -- add a new varray element to nva
+  nva.EXTEND;
+  -- replace inner varray elements
+  nva(5) := t1(56, 32);
+  nva(4) := t1(45,43,67,43345);
+  -- replace an inner integer element
+  nva(4)(4) := 1; -- replaces 43345 with 1
+  -- add a new element to the 4th varray element
+  -- and store integer 89 into it.
+  nva(4).EXTEND;
+  nva(4)(5) := 89;
+  dbms_output.put_line(nva(4)(5));--89
+END;
+
+
+*********************************Multilevel Nested Table****************************************
+
+
+DECLARE
+  TYPE tb1 IS TABLE OF VARCHAR2(20);
+  TYPE Ntb1 IS TABLE OF tb1; -- table of table elements
+  TYPE Tv1 IS VARRAY(10) OF INTEGER;
+  TYPE ntb2 IS TABLE OF tv1; -- table of varray elements
+  vtb1 tb1 := tb1('one', 'three');
+  vntb1 ntb1 := ntb1(vtb1);
+  vntb2 ntb2 := ntb2(tv1(3,5), tv1(5,7,3));
+  -- table of varray elements
+BEGIN
+  vntb1.EXTEND;
+  vntb1(2) := vntb1(1);
+  dbms_output.put_line(vntb1(2)(2));--three
+  -- delete the first element in vntb1
+  vntb1.DELETE(1);--删除下列语句不能进入下面if
+  /*
+  if vntb1(1) is null then -- 未找到任何数据，异常信息
+    dbms_output.put_line('vntb1(1) is null');
+  end if;
+  */
+  dbms_output.put_line(vntb1(2)(1));--one
+  -- delete the first string
+  -- from the second table in the nested table
+  vntb1(2).DELETE(1);
+  --dbms_output.put_line(vntb1(2)(1));-- 未找到任何数据，异常信息
+  dbms_output.put_line(vntb1(2)(2));--three
+  vntb2.extend;
+  vntb2(3) :=tv1(33,88,99);
+  dbms_output.put_line(vntb2(3)(2));--88
+END;
+
+
+
+******************************** Multilevel Associative Array****************************************
+
+
+DECLARE
+  TYPE tb1 IS TABLE OF INTEGER INDEX BY PLS_INTEGER;
+  -- the following is index-by table of index-by tables
+  TYPE ntb1 IS TABLE OF tb1 INDEX BY PLS_INTEGER;
+  TYPE va1 IS VARRAY(10) OF VARCHAR2(20);
+  -- the following is index-by table of varray elements
+  TYPE ntb2 IS TABLE OF va1 INDEX BY PLS_INTEGER;
+  v1 va1 := va1('hello', 'world');
+  v2 ntb1;
+  v3 ntb2;
+  v4 tb1;
+  v5 tb1; -- empty table
+BEGIN
+  v4(1) := 34;
+  v4(2) := 46456;
+  v4(456) := 343;
+  v2(23) := v4;
+  dbms_output.put_line(v2(23)(2));--46456
+  v3(34) := va1(33, 456, 656, 343);
+  dbms_output.put_line(v3(34)(3));--656
+  -- assign an empty table to v2(35) and try again
+  v2(35) := v5;
+  v2(35)(2) := 78; -- it works now
+  dbms_output.put_line(v2(35)(2));--78
+  dbms_output.put_line(v2(35)(1));--未找到任何数据
+END;

@@ -1,0 +1,70 @@
+--pl/sql分页编程
+   
+   --分页
+     select b.rn,b.* 
+     from (select rownum rn,a.* 
+           from (select * 
+	         from emp 
+		 order by sal)a
+	   )b
+     where b.rn between 1 and 15;
+      
+    --pl/sql分页
+      --包
+      create or replace package test_page as 
+        type test_page_cursor is ref cursor;
+      end test_page;
+
+      create or replace procedure p_select_page(
+         i_tableName in   varchar2,
+	 i_size      in   number,
+	 i_page      in   number,
+	 o_rows      out  number,--总行数
+	 o_pages     out  number,--总页数
+         o_cursor    out  sys_refcursor) is
+       --定义sql字符串
+         v_sql varchar2(1000);
+	 v_start number := (i_page-1)*i_size+1;
+	 v_end   number := i_size*i_page;
+	 v_ename emp.ename%type;
+       begin
+          v_sql :='select b.ename from (select rownum rn,a.* '||
+	          'from (select * '||
+	          '       from '|| i_tableName || 
+		  '        order by sal)a'||
+	          ' )b where b.rn between '|| v_start ||' and '|| v_end;
+          --打开游标与sql语句关联
+	  open  o_cursor for v_sql;
+	      loop
+	          fetch o_cursor into v_ename;
+	          exit when o_cursor%notfound;
+		  dbms_output.put_line(v_ename);
+	      end loop;
+	  close o_cursor;
+	  --计算
+	  v_sql :='select count(*) from ' || i_tableName;
+	  execute immediate v_sql into o_rows;
+	  --select count(*),count(*)/i_size into o_rows,o_pages
+	  if mod(o_rows,i_size)=0 then 
+	     o_pages :=o_rows/i_size;
+	  else
+	     o_pages :=Trunc(o_rows/i_size) +1;
+	  end if;
+	  dbms_output.put_line('zs:'||o_rows);
+	  dbms_output.put_line('ys:'||o_pages);
+       end;
+
+       
+
+
+
+
+
+
+
+
+
+
+
+
+

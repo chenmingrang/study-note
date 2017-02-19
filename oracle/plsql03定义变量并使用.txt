@@ -1,0 +1,130 @@
+pl/sql定义变量和常量
+   --标量类型(scalar)
+   --复合类型(composite)
+   --参照类型(reference)
+   --lob(large object)
+
+   ********************************************标量**********************************
+
+      identifier [constant] datatype [not null] [:=|default expr]
+         identifier 名称
+         constant   指定常量，需要指定它的初始值，且不能改变
+	 datatype   数据类型
+	 not null   不能为空
+	 :=         指定初始值
+	 default    指定初始值默认
+	 expr       指定初始值的pl/sql表达式，可以是文本、其他变量、函数等。
+      
+       --变长字符串
+          v_name varcahr2(10);
+       --定义小数
+          v_sal  number(6,2);
+       --定义小数并初始化
+          v_sal number(6,2):=500.00;
+       --定义日期类型
+          v_hiredate date;
+       --定义一二布尔变量
+          v_valid  boolean not null default fasle;
+         
+       --案例
+         declare 
+	    c_tax_rate number(3,2):=0.03;
+	    v_ename    varchar2(10);
+	    v_sal      number(7,2);
+            v_tax_sal  number(7,2);
+	 begin
+	    select ename,sal into v_ename,v_sal from emp where empno=&no;
+	    v_tax_sal:=v_sal*c_tax_rate;
+	    dbms_output.put_line('姓名是：'||v_ename||'  工资是：'||v_sal||'  应交税'||v_tax_sal);
+	 end;
+         
+	 --%type
+         declare 
+	    c_tax_rate number(3,2):=0.03;
+	    v_ename    emp.ename%type;
+	    v_sal      emp.sal%type;
+            v_tax_sal  emp.sal%type;
+	 begin
+	    select ename,sal into v_ename,v_sal from emp where empno=&no;
+	    v_tax_sal:=v_sal*c_tax_rate;
+	    dbms_output.put_line('姓名是：'||v_ename||'  工资是：'||v_sal||'  应交税'||v_tax_sal);
+	 end;
+
+    ********************************复合标量(composite)**************************
+
+	    1.pl/sql记录  类似于高级语言中的结构体(类)
+	    2.pl/sql表    相当于高级语言中的数组，下标可以为负值，并且没有限制
+	    3.嵌套表
+	    4.varray
+          
+	  --案例(pl/sql记录)
+	     declare
+	         --定义一个pl/sql记录类型(emp_record_type)
+	         type emp_record_type is record(
+		   v_ename    emp.ename%type,
+	           v_sal      emp.sal%type,
+		   v_job      emp.job%type
+		 );
+		 --定义了一个变量(emp_record_type);
+		 v_record emp_record_type;
+	      begin
+		    select ename,sal,job into v_record 
+		    from emp
+                    where empno=&no;
+		    dbms_output.put_line('员工名：'||v_record.v_ename);
+		    dbms_output.put_line('工资名：'||v_record.v_sal);
+		    dbms_output.put_line('工作名：'||v_record.v_job);
+	      end;
+
+            --案例(pl/sql表)
+	      declare
+	          --定义了一个pl/sql表类型
+		  --index by binary_integer表示下表为整数
+	          type sp_table_type is table of emp.ename%type index by binary_integer;
+		  sp_table sp_table_type;
+	      begin
+	          select ename into sp_table(0) from emp where empno=&no;
+		  dbms_output.put_line('员工名：'||sp_table(0));
+	      end;
+
+    ********************************参照类型(reference)**************************
+	     
+        --参照类型(reference)
+	  用于存放数值指针的变量，包括游标变量(ref cursor)和对象变量(ref obj_type)
+        
+	--案例
+	   declare 
+	       --定义游标类型
+	       type sp_emp_cursor is ref cursor;
+	       --定义一个游标变量
+               c_emp  sp_emp_cursor;
+	       --定义变量
+	       v_ename   emp.ename%type;
+	       v_sal     emp.sal%type;
+	       v_job     emp.job%type;
+	   begin
+	       --把c_emp与一个select结合
+	       open c_emp for select ename,sal,job from emp where deptno=&no;
+	       --循环取出
+	       loop
+	           fetch c_emp into v_ename,v_sal,v_job;
+		   --判断c_emp是否为空
+		   exit when c_emp%notfound;
+                   dbms_output.put_line('员工名：'||v_ename);
+		   dbms_output.put_line('工资名：'||v_sal);
+		   dbms_output.put_line('工作名：'||v_job);
+		   dbms_output.put_line('');
+	       end loop;
+	   end;
+
+
+
+
+
+
+
+
+
+
+
+

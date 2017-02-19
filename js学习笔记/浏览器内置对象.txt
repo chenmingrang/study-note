@@ -1,0 +1,57 @@
+*****************************************navigator**************************************
+--Navigator     浏览器总体信息的代表
+  --appName     浏览器的简单名称
+  --appVersion  浏览器版本号
+  --userAgent   包含appName和appVersion中所有的信息
+  --appCodeName 浏览器的代码名Netscape用代码“Mozilla”做为这一值的属性
+  --platform    运行浏览器的硬件平台
+
+  --查看navigator的所有属性
+  for(var i in window.navigator)
+     document.write(i+"="+window.navigator[i]+"<br>");
+
+
+*****************************************screen**************************************
+   --width和height表示显示器分辨率
+   --availWidth和availHeight表示的实际可用的显示空间大小
+   --colorDepth表示浏览器可以显示的颜色数的位数，通常与显示器所使用的色彩位数相同
+       一个32位的显示器可以显示的颜色数是2^32，如果所有颜色对于浏览器来说是可以用的
+       那么colorDepth的值就是32。
+       
+
+*****************************************location**************************************
+    代表窗口中显示文档的url的代表
+    --location对象的href属性是一个字符串，包含完整的url
+    --其他属性（如protocol、host、pathname和search）则申明了url的各个部分
+    --刷新页面或重定向
+       self.location.href='http://www.baidu.com';
+       self.location=top.location;
+
+    --Location
+         --replace()是一个新的文档覆盖当前文档，浏览器上的back按钮就不能够使用
+	   用户返回原文档。
+	 --reload()导致当前页面文档的重新装载;
+
+
+*****************************************history**************************************
+    --back()后退
+    --forward()前进
+    --go(n)前进或后退几个页面
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

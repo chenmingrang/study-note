@@ -1,0 +1,26 @@
+--索引
+
+   --单列索引
+      CREATE INDEX 索引名 ON 表名(列名) )TABLESPACE 表空间名
+
+   --复合索引
+      CREATE INDEX 索引名 ON 表名(列1,列2...) )TABLESPACE 表空间名
+
+   --查询表上索引
+      select index_name,index_type from user_indexes where table_name='表名';
+   
+   --显示索引列
+      select table_name,column_name from user_ind_columns where index_name='索引名';
+   
+   --删除索引（一般不进行删除操作）
+      drop index 索引名
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+declare
+  type empList is table of number;
+  v_empList empList;
+  sql_stmt varchar2(200);
+  ename varchar2(20) :='SCOTT'' or 1=1 --';
+  --ename varchar2(20) :='SCOTT';
+begin
+  sql_stmt :='select empno  from emp where ename = '''||ename ||'and sal > 400 ';
+  execute immediate sql_stmt bulk collect into v_empList;
+  dbms_output.put_line(v_empList.last);
+  for i in v_empList.FIRST .. v_empList.LAST loop
+    dbms_output.put_line(v_empList(i));
+  end loop;
+  --pa_against_injection.p_getempinfo(v_ename  => 'SCOTT'' or 1=1 ''--', v_sal    => 3000, v_record =>v_record );
+  --pa_against_injection.p_getempinfo(v_record =>v_record);
+end;
+/

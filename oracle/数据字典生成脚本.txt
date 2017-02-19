@@ -1,0 +1,35 @@
+select t2.COLUMN_ID "序号",
+       t1.COLUMN_NAME "字段名称",
+       t1.COMMENTS "中文标识",
+       case t2.DATA_TYPE
+         when 'NUMBER' then
+          t2.DATA_TYPE || '(' || t2.DATA_PRECISION || ',' || t2.DATA_SCALE || ')'
+         when 'DATE' then
+          t2.DATA_TYPE
+         else
+          t2.DATA_TYPE || '(' || t2.DATA_LENGTH || ')'
+       end "数据类型",
+       --t2.DATA_TYPE,
+       --t2.DATA_LENGTH,
+       --t2.DATA_PRECISION,
+       --t2.DATA_SCALE,
+       case t2.NULLABLE
+         when 'N' then
+          'TRUE'
+         when 'Y' then
+          'FALSE'
+         else
+          'error'
+       end "必须赋值",
+       t2.DATA_DEFAULT "默认值",
+       (select decode(count(1),1,'TRUE','FALSE')
+          from user_constraints t4, user_ind_columns t5
+         where t4.INDEX_NAME = t5.INDEX_NAME
+           and t4.CONSTRAINT_TYPE = 'P'
+           and t4.table_name = t1.table_name
+           and t5.column_name = t1.COLUMN_NAME) "主键",
+       '' "备注"
+  from user_col_comments t1, user_tab_columns t2
+ where t1.TABLE_NAME = t2.table_name
+   and t1.COLUMN_NAME = t2.column_name
+   and t1.table_name = 'SB_ZDSY_QYJBXX';

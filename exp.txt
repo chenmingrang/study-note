@@ -1,0 +1,4 @@
+userid=scott/password@localhost:1521/zzsgl
+file=e:\orcaleStudy.dmp
+owner=scott
+log=e:\logScott.txt

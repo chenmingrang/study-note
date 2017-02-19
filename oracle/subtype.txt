@@ -1,0 +1,44 @@
+   DECLARE
+      v_sqlerrm VARCHAR2(64);
+    
+      SUBTYPE pinteger IS PLS_INTEGER RANGE -9..9;
+      y_axis pinteger;
+    
+      PROCEDURE p (x IN pinteger) IS
+      BEGIN
+          DBMS_OUTPUT.PUT_LINE (x);
+      END p;
+   
+   BEGIN
+     y_axis := 9;
+     p(10);
+   
+   EXCEPTION
+     WHEN OTHERS THEN
+       v_sqlerrm := SUBSTR(SQLERRM, 1, 64);
+       DBMS_OUTPUT.PUT_LINE('Error: ' || v_sqlerrm);
+   END;
+
+   --Error: ORA-06502: PL/SQL: 数字或值错误 
+
+   当pinteger的超出范围时报错。
+
+
+********************************定义非空varchar2类型****************************
+
+   declare 
+      subtype v_word is varchar2(10) not null;
+      v_verb v_word  :='run';
+      noun   varchar2(10) :=null;
+  
+      procedure word_to_upper (w in v_word)is
+      begin
+         dbms_output.put_line(upper(w));
+      end word_to_upper;
+   begin
+     word_to_upper('more than ten characters');
+     word_to_upper(noun);
+   end;
+
+   ORA-06502: PL/SQL: 数字或值错误 
+   ORA-06512: 在 line 12

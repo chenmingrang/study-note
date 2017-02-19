@@ -1,0 +1,86 @@
+********************************pl/sql编程********************************************
+
+   --pl/sql(procedural language)
+
+   --过程、函数、触发器
+        1.用pl/sql编写的；
+	2.存放在oracle中；
+	3.非常强大的数据库程序语言；
+        4.过程、函数可以在java程序中调用
+
+    --优点
+        1.提高应用程序的应用性能
+        2.模块化的设计思想(分页的过程、订单过程、转账)
+        3.减少网络传输
+        4.提高安全性能
+
+    --缺点
+        移植性不好
+
+    --案例
+       --创建表
+          create table test01(name varchar2(20),password varchar2(20));
+
+       --创建过程
+          create or replace procedure my_proc01 is
+          begin
+              insert into test01 values ('tom','123456');
+          end;
+
+	--如何查看错误  show error；
+   
+        --如何调用该过程
+	  1.exec 过程名(参数值1,参数值2...);
+	  2.call 过程名(参数值1,参数值2...);
+    
+     --案例2
+        create or replace procedure my_proc02 is
+	begin
+	    delete from test01 where name='tom';
+	end;
+     
+     
+     --简单分类
+        基本单位是块
+	  1.过程(存储过程)
+	  2.函数
+	  3.触发器
+	  4.包
+     
+     --编写规范
+        1.单行注释 --
+           select * from emp where empno=7839;--获取员工信息
+        2.多行注释 /*.....*/
+	3.标识符号的命名规范
+	   3.1 变量 v_，eg v_sal;
+	   3.2 常量 c_，eg c_rate;
+	   3.3 游标 _cursor后缀 eg emp_cursor;
+	   3.4 例外 e_作为前缀 eg e_error;
+
+      --块(block)是pl/sql的基本单元
+         1.定义部分  declare开始     定义变量、常量、游标、复杂数据类型
+	 2.执行部分  begin开始       要执行的pl/sql语句和sql语句
+	 3.例外部分  exception开始   处理运行的各种错误
+         4.end       结束
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,141 @@
+*************************文档对象模型DOM(Document Object Model)******************************
+
+--如果编写的是跨浏览器的应用实现，就必须很谨慎地使用这些浏览器DOM方言;
+  eg:EI only document.all和outerHTML是IE方言，在Mozilla浏览器上不能正确运行；
+
+--DOM Element 的 childNodes属性是一个集合，它包含了DOM Element中聚合的所有子对象；
+   childNodes并不是真正的数组，而只是一个带有下标的集合。
+
+--Document 接口的
+   1.createElement()可以创建新的 DOM Element节点
+   2.createTextNode()可以创建文本节点
+   3.createAttribute()可以创建属性节点
+
+--innerHTML属性也可以创建节点(IE和Mozilla)
+   eg:document.getElementById('id1').innerHTML="<input type='text' value='innerHTML'/>";
+
+--document.getElementById和getElementByTagName
+     --频繁使用这些函数，并不会导致页面效率低下
+       大多数浏览器都针对DOM查询进行了优化，他们预先准备了针对
+        id和tagName的索引。
+     --因此在寻找节点时，避免定义过多的变量，可以直接使用这两种方法
+       获取。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

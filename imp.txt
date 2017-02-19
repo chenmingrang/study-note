@@ -1,0 +1,6 @@
+userid=zzsglNew/zzsgl@10.10.10.172:1521/nfpt
+file=e:\zzsglData_local.dmp
+fromuser=zzsgl
+touser=zzsglNew
+log=e:\zzsglNewImp.txt
+IGNORE=y

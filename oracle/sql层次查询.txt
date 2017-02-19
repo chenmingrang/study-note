@@ -1,0 +1,5 @@
+select 
+   ename,empno,job,mgr,level 
+from emp where level<=2 --层次小于等于2
+connect by  prior empno = mgr --连接条件
+start with empno=7839   --开始的节点

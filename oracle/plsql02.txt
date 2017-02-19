@@ -1,0 +1,110 @@
+***************************************************pl/sql*************************************************
+    --包示例
+	set serveroutput on --打开输出选项
+	begin
+	    dbms_output.put_line('hello');
+	end;
+	-- dbms_output 是一个包
+
+
+    --块示例
+        declare
+	    v_ename varchar2(5);--定义字符串变量
+	    v_sal number;
+	begin
+	    select ename,sal into v_ename,v_sal from emp where empno=&no;
+	    dbms_output.put_line('员工名:'||v_ename||'  薪水:'|| v_sal);
+	end;
+	/
+
+     --例外处理示例
+        declare
+	    v_ename varchar2(5);--定义字符串变量
+	    v_sal number;
+	begin
+	    select ename,sal into v_ename,v_sal from emp where empno=&no;
+	    dbms_output.put_line('员工名:'||v_ename||'  薪水:'|| v_sal);
+	    --异常处理
+	    exception
+	       when no_data_found then
+	       dbms_output.put_line('输入的编号不存在');
+	end;
+
+
+
+      ****************************过程********************************
+      --输入参数in
+      --输出参数out
+      
+      create or replace procedure p_change_sal(
+             i_ename varchar2,
+	     i_new_sal number
+      ) is
+      begin
+           update emp set sal=i_new_sal where ename=i_ename;
+      end;
+
+
+      
+      ****************************函数********************************
+      在函数头部必须包含return子句;
+      
+      --输入员工的姓名，返回该员工的年薪
+      create or replace function f_sal_emp(v_ename varchar2) 
+      return number is n_sal number(7,2);
+      begin
+          select sal*12+nvl(comm,0)*12 into n_sal from emp where ename=v_ename;
+	  return n_sal;
+      end;
+      
+      --调用
+           var abc number;
+           call f_sal_emp('SCOTT') into :abc;
+
+     
+      
+     ****************************包********************************
+
+     包用于在逻辑上组合过程和函数，它有包规范和包体两部分组成。
+     --创建一个包
+
+     --声明该包有一个过程和一个函数
+     create or replace package package01 is
+         procedure update_sal(v_ename varchar2,new_sal number);
+	 function  annual_income(v_ename varchar2) return number; 
+     end;
+
+     --创建包体
+     create or replace package body package01 is 
+        procedure update_sal(
+	   v_ename     varchar2,
+	   new_sal   number)
+	is
+	begin
+	   update emp set sal=new_sal where ename=v_ename;
+	end;
+	--函数
+	function annual_income(v_ename varchar2)
+	return number is a_income number;
+	begin 
+	    select sal*12+nvl(comm,0)*12 into a_income 
+	    from   emp 
+	    where  ename=v_ename;
+	    return a_income;
+	end;
+    end;
+
+    --调用
+    exec package01.update_sal('SCOTT',6789);
+
+    var abc number;
+    call package01.annual_income('SCOTT') into:abc;
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,143 @@
+**********************************pl/sql进阶*************************************
+
+--控制结构
+  
+  --条件
+    1.if-then;
+
+        create or replace procedure p_change_sal(v_ename varchar) is
+	   v_sal emp.sal%type;
+        begin
+	   select sal into v_sal from emp where ename=v_ename;
+	   if v_sal<2000 then 
+	      update emp set sal=sal*1.1 where ename=v_ename;
+	   end if;
+	end;
+    
+    2.if-then-else;
+        
+	create or replace procedure p_changeComm(v_ename varchar) is
+	    v_comm emp.comm%type;
+	begin 
+	    select nvl(comm,0) into v_comm from emp where ename=v_ename;
+	    if v_comm<>0 then
+	       update emp set comm=comm+100 where ename=v_ename;
+	    else
+	       update emp set comm=200 where ename=v_ename;
+	    end if;
+	end;
+         
+    3.if-then-elsif-else;
+       
+       create or replace procedure p_changeSal2(i_empno number) is
+            v_job emp.job%type;
+       begin
+           select job into v_job from emp where empno=i_empno;
+	   if v_job='PRESIDENT' then
+	      update emp set sal=sal+1000 where empno=i_empno;
+	   elsif v_job='MANAGER' then
+	      update emp set sal=sal+500 where empno=i_empno;
+	   else
+	      update emp set sal=sal+200 where empno=i_empno;
+	   end if;
+       end;
+          
+
+  --循环
+      1.loop至少循环一次
+          
+	  create or replace procedure p_test(i_name varchar2) is
+	     v_num number:=1;
+	  begin
+	      loop 
+	         insert into users values(v_num,i_name);
+		 --判断是否要退出循环
+		 exit when v_num=10;
+		 v_num:=v_num+1;
+	      end loop;
+	  end;
+        
+      2.while循环
+
+          create or replace procedure p_test2(i_name varchar2) is
+	     v_num number:=11;
+	  begin
+	      while v_num<=20 loop
+	         insert into users values(v_num,i_name);
+		 v_num:=v_num+1;
+	      end loop;
+	  end;
+          
+      3.for循环
+        
+	 begin
+	     for i in reverse 1.. 10 loop
+	     insert into users values();
+	 end;
+
+  --goto和null(不不建议使用)
+    
+     --goto多层循环可以用
+
+     declare
+        i int := 1;
+     begin
+        loop
+	dbms_output.put_line('输出'||i);
+	if i=10 then
+	   goto end_loop;
+	end if;
+	i:=i+1;
+	end loop;
+	dbms_output.put_line('循环结束1');
+	<<end_loop>>--标号
+	dbms_output.put_line('循环结束2');
+     end;
+
+
+     --null语句不会执行任何操作，并且会直接将控制传递到下一条语句
+
+     declare
+         v_sal     emp.sal%type;
+	 v_ename   emp.ename%type;
+	 v_comm    emp.comm%type;
+     begin
+         select ename,sal,comm into v_ename,v_sal,v_comm
+	 from emp where empno=&no;
+	 dbms_output.put_line('comm:'||v_comm);
+	 if v_comm > 500 then
+	    update emp set comm=sal*0.1 where ename=v_ename;
+	 else
+	    null;--什么都不做
+	 end if;
+     end;
+
+       
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

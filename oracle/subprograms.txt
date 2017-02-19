@@ -1,0 +1,137 @@
+/*****************************declaring, defining, and invoking a simple pl/sql procedure*****************************/
+declare
+  in_string varchar2(100) :='this is my test string';
+  out_string varchar2(200);
+  procedure double (original in varchar2,
+                    new_string out varchar2)
+  is
+    begin
+      new_string := original || ' + ' || original;
+    exception
+      when value_error then
+        dbms_output.put_line('output buffer not long enough.');
+    end;
+begin
+  double(in_string, out_string);  -- procedure invocation
+  dbms_output.put_line(in_string || ' -> ' || out_string);
+end;
+/
+
+
+
+/*****************************declaring, defining, and invoking a simple pl/sql function*****************************/
+declare
+  -- function declaration and definition begins
+  function square (original number)
+    return number  -- return clause
+  as
+    original_squared number;
+  begin
+    original_squared := original * original;
+    return original_squared;  -- return statement
+  end;
+begin
+  dbms_output.put_line(square(100));  -- function invocation
+end;
+/
+
+
+
+/*****************************creating nested subprograms that invoke each other*****************************/
+declare
+  -- declare proc1 (forward declaration):
+  procedure proc1(number1 number);
+
+  -- declare and define proc 2:
+  procedure proc2(number2 number) is
+  begin
+    proc1(number2);
+  end;
+
+  -- define proc 1:
+  procedure proc1(number1 number) is
+  begin
+    proc2 (number1);
+  end;
+
+begin
+  null;
+end;
+/
+
+
+
+/*****************************formal parameters and actual parameters*****************************/
+declare
+  emp_num number(6) := 7839;
+  bonus   number(6) := 100;
+  merit   number(4) := 50;
+
+  procedure raise_salary (
+    emp_id number,  -- formal parameter
+    amount number   -- formal parameter
+  ) is
+  begin
+    update emp
+      set sal = sal + amount
+        where empno = emp_id;
+  end raise_salary;
+
+begin
+  raise_salary(emp_num, bonus);  -- actual parameters
+  raise_salary(emp_num, merit + bonus);  -- actual parameters
+  --add 250Ԫ
+end;
+/
+
+
+
+/*****************************procedure with default parameter values*****************************/
+declare
+  emp_num number(6) := 120;
+  bonus   number(6);
+  merit   number(4);
+  procedure raise_salary (emp_id in number,
+    amount in number default 100,
+                          extra in number default 50) is
+    begin
+      update employees set salary = salary + amount + extra 
+        where employee_id = emp_id;
+  end raise_salary;
+begin
+  -- same as raise_salary(120, 100, 50)
+  raise_salary(120);
+  -- same as raise_salary(120, 100, 25)
+  raise_salary(emp_num, extra => 25);
+end;
+/
+
+declare
+  cnt pls_integer := 0;
+  function dflt return pls_integer is
+  begin
+    cnt := cnt + 1;
+    return 42;
+  end dflt;
+  -- default is expression
+  procedure p(i in pls_integer default dflt()) is
+     begin
+       dbms_output.put_line(i);
+  end p;
+begin
+  for j in 1..5 loop
+    p(j);  -- actual parameter is provided
+  end loop;
+  dbms_output.put_line('cnt: '||cnt);
+  p();  -- actual parameter is not provided
+  dbms_output.put_line('cnt: '||cnt);
+end;
+/
+1
+2
+3
+4
+5
+cnt: 0
+42
+cnt: 1

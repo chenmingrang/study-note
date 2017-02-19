@@ -1,0 +1,50 @@
+********************************pl/sql分页****************************************
+
+   --建表
+       create table book (
+           bookId number(10),
+	   bookName varchar2(30),
+	   publisher varchar2(50)
+	);
+
+    --编写过程
+        --in输入参数
+	--out输出参数
+        create or replace procedure p_page_book(
+	    i_bookId    in   number,
+	    i_bookName  in   varchar2,
+	    i_publisher in   varchar2
+	) is
+        begin
+	    insert into book values(i_bookId,i_bookName,i_publisher);
+	end;
+
+
+        create or replace procedure p_getName_book(
+	    i_bookId    in   number,
+	    o_bookName  out  varchar2)is
+         begin
+	    select bookName into o_bookName from book where bookId=i_bookId;
+	 end;
+         --调用
+	    var bookname varchar2;
+	    exec p_getName_book(123,:bookname);
+
+        --返回结果集的过程
+           --创建一个包
+	      --定义一个游标类型
+              create or replace package test_package as
+	          type test_cursor is ref cursor;
+	      end test_package;
+	    
+	    --创建存储过程
+	      create or replace procedure p_test(
+	         i_depno   in    number, 
+		 o_cursor  out   test_package.test_cursor
+		 )is
+	      begin 
+	         open o_cursor for select * from emp where deptno=i_depno;
+	      end;
+	 
+
+

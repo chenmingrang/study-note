@@ -1,0 +1,74 @@
+--系统权限，对象权限，角色权限
+	--查询所有系统权限；
+	select * from system_privilege_map;
+
+	--查询所有角色；
+	select * from dba_roles;
+
+	--查询所有对象权限；
+	select distinct privilege from dba_tab_privs;
+
+	--查询数据库的表空间；
+	select tablespace_name from dba_tablespaces;
+
+	--查询表空间及文件目录；
+	select * from dba_data_files;
+
+	--查询用户所具有的角色；
+	select * from dba_role_privs where grantee='SCOTT';
+
+	--查询SCOTT用户所具有的系统权限；
+	select * from dba_sys_privs where grantee='SCOTT';
+
+	--查询一个角色包含的系统权限
+	select * from dba_sys_privs where grantee='DBA';
+
+	--查询一个角色包含的对象权限
+	select * from dba_tab_privs where grantee='DBA';
+
+
+        --系统权限
+           create session 连接数据库
+	   create table
+	   create view 
+	   create public synonym 同义词
+	   create procedure 创建过程、包、函数
+           create trigger 触发器
+	   create cluster 创建集群
+	   。。。。
+
+	--授予系统权限
+	   --with admin option选项，权限可以传递;
+	   --用其他用户授予系统需要有 grant any privilege权限(一般有dba完成);
+	     grant create session,create table to user_name [with admin option];
+	create user tom identified by password;
+        
+	--系统权限回收(不会级联回收)
+             revoke create session from tom;
+
+
+	--对象权限(访问其他方案/用户对象的权利)
+          alter 修改
+	  delete 
+	  select
+	  insert
+	  update
+	  execute 执行
+
+        --对象权限可以授予用户/角色/public
+	--system/dba可以授予对象权限
+	--with grant option 可以将权限转授给其他用户
+            grant select on emp to king [with grant option];
+	    grant all on emp to king;--授予所有权限
+
+	    grant update on emp(sal) to king;--精细控制(修改sal字段)
+	    grant select on emp(sal) to king;
+
+	 --对象权限回收(级联回收)
+            revoke select on emp from king;
+
+
+
+
+
+
