@@ -4,3 +4,4 @@ fromuser=zzsgl
 touser=zzsglNew
 log=e:\zzsglNewImp.txt
 IGNORE=y
+
