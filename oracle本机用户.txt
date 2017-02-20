@@ -1,3 +1,9 @@
-gbkorcl : learn/learn  zzsgl/zzsgl
+computer-home：
+gbkorcl : learn/learn  zzsgl/zzsgl 
 myorcl  : fwsk/fwsk
+其他用户: system/password sys/password
+
+compute-notebook
+zzsgl: zzsgl/zzsgl  scott/password(pl/sql学习用户)
+utf8db: fwsk/fwsk
 其他用户: system/password sys/password
