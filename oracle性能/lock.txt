@@ -1,0 +1,56 @@
+没有并发就没有锁！
+
+oracle锁分类
+    --Enqueues   队列类型的锁，通常和业务相关的。
+
+    --Latches      系统资源方面的锁，比如内存结构，sql解析。。。
+
+
+锁的原则：
+   --只有被修改时，行才会被锁定。
+
+   --当一条语句修改了一条记录，只有这条记录上被锁定，在oracle数据库中不存在锁升级。
+
+   --当某行被修改时，它将阻塞别人对它的修改。
+
+   --当一个事务修改一行时，将在 这个行上加上行锁(TX)，用于阻止其他事务对相同行的修改。
+
+   --读永远不会组织写。
+
+   --读不会阻塞写，但唯一的例外，就是select .. for update。
+
+   --写永远不会阻塞读。
+
+   --当一行被修改后，oracle通过回滚段提供给数据的一致性读。
+
+
+查看锁：
+   select type,name from v$lock_type;
+
+
+TM表锁（inset， update ，delete， select .. for update）操作时
+      -- 保证操作能够正常操作，并阻止其他人对执行表的DDL操作
+
+TX锁 事务锁（行锁）
+      --对于正在修改的数据，阻止其他会话进行修改
+
+
+--update、delete阻塞（操作同一条数据）
+	--查询当前锁的sid
+	select distinct sid from v$mystat;
+
+	--查询锁的一些状态及相关参数
+	select sid,type,id1,id2,lmode,request,block from v$lock where type in ('TM','TX') order by 1,2;
+
+	--等待事件查询
+	select sid,event from v$session_wait where sid in (68,130);
+
+--insert阻塞（操作不同的数据）
+     相比update和delete，多了一个锁
+
+
+select ... for update的阻塞
+
+
+
+
