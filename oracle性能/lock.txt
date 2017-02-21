@@ -50,7 +50,24 @@ TX锁 事务锁（行锁）
 
 
 select ... for update的阻塞
+锁定选定的行，不允许其他session操作这部分数据
+
+
+--手工锁定一张表（当rollback或是commit时所解除）
+lock table <tablename> in share mode ;
 
 
 
+RI锁--基于引用关系的锁定（主外键）
+    主键不要修改，外键上建索引
 
+
+死锁:oracle会检测出死锁，自动终止
+create table p(no int primary key);
+session1:insert into p values(2);
+session2:insert into p values(3);
+
+session1:insert into p values(3);
+session2:insert into p values(2);
+
+session1:报出“等待资源时检测到死锁”

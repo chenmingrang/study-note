@@ -1,0 +1,61 @@
+Latch（争抢，数据库层面的锁）的目的
+   保证资源的串行访问
+      --保护SGA的资源访问
+      --保护内存的分配
+
+   保证执行的串行化
+      --保护关键资源的串行化执行
+      --防止内存结构损毁
+
+
+Latch在哪里--SGA
+    资源的请求和分配
+    1.共享池
+          --sql解析，sql重用
+
+    2.数据缓冲池
+          -- 数据访问，数据写入磁盘，数据读入内存
+	  --修改数据块
+	  --数据段扩张
+
+--查看所有的latch
+select name from v$latchname;
+
+
+latch的获取
+   wait方式--如果无法获取请求的latch则
+        --spin
+	     当一个会话无法获取需要的latch时，会继续使用CPU(cpu空转)，达到一个间隔后，
+	     再次尝试申请latch，直到达到最大的重试数。
+	 --sleep
+	     当一个会话无法获取需要的latch时，会等待一段时间，达到一个时间间隔后，
+	     再次尝试申请latch，如此反复，直到达到最大重试数。
+
+     no wait 方式--如果无法获取请求的latch时，则：
+          --不会发生sleep或是spin
+	  --转而去获取其他可用的latch。
+
+
+--输出的查询日志
+alter session set tracefile_identifier=XXX;
+alter session set sql_trace=true;
+
+             
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
