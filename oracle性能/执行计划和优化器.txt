@@ -1,0 +1,57 @@
+执行计划--数据的访问
+     直接表的访问
+          并行
+          多数据块
+
+     通过索引访问
+          index unique scan  例如主键
+	  index range scan    
+	  index full scan
+	  index fast full scan
+	  index skip scan
+
+执行计划--数据处理
+     order by 
+     group by 
+     count
+     avg
+     sum
+     ....
+
+执行计划--数据的关联处理
+      nested loop join   拿表1的数据到表2中扫描
+      Merge join   先排序，再查找
+      hash join       对小表进行hsah运算（小表没有索引更快）
+
+set autotrace trace exp;
+
+
+优化器：cost based optimizer
+    依据一套数据模型，计算数据访问和处理的成本，选择最优成本为执行方案。
+
+cbo的工作模式
+     all_rows --以结果集的全部处理完毕为目的
+           select id ,count(*) from t group by id;
+
+     first_rows--以最快返回n行为目的
+          适合分页
+
+优化器模式的设置方式
+
+     参数设置
+         optimizer_mode     String    all_rows
+
+    会话模式
+          alter session set optimizer_mode=all_rows;
+
+    sql设置
+          select /*all_rows*/ count(*) from t;
+
+
+--查看表的选择性(selectivity)
+    select column_name,num_distinct from user_tab_col_statistics where table_name='xxxx' order by 2 desc;
+
+--查看索引的选择性
+   select index_name,ditinct)keys from user_indexes where table_name='xxxx';
+
+
