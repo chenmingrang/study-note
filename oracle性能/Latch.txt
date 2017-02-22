@@ -10,16 +10,17 @@ Latch（争抢，数据库层面的锁）的目的
 
 Latch在哪里--SGA
     资源的请求和分配
-    1.共享池
+    1.共享池（shared pool）
           --sql解析，sql重用
 
-    2.数据缓冲池
+    2.数据缓冲池（data buffer）
           -- 数据访问，数据写入磁盘，数据读入内存
 	  --修改数据块
 	  --数据段扩张
 
 --查看所有的latch
 select name from v$latchname;
+
 
 
 latch的获取
@@ -40,11 +41,63 @@ latch的获取
 alter session set tracefile_identifier=XXX;
 alter session set sql_trace=true;
 
-             
 
-    
+	     
+shared pool中的latch争用--绑定变量（sql硬分析）
 
 
+
+data buffer中的latch争用--热块
+  --表数据块争用
+
+  --热块索引数据热块
+  
+  --文件头数据块--并发修改
+
+
+data buffer中的latch争用--多版本
+
+
+
+latch相关的视图
+   --v$latch 查看所有的latch（系统级）
+     name：名称
+     gets：以Willing to wait请求模式latch的请求成功数
+     misses：初次尝试请求不成功的次数
+     sleeps: 成功获取前sleeping次数
+     immediate_gets:以immediate模式latch请求数
+     immediate——misses: 以immediate模式请求失败数
+
+   --v$latchholder（会话级）
+     包含了当前latch持有者的信息；
+     通过视图中的pid和sid信息，关联视图v$session,v$session_wait,可以定位到相应持有资源的会话信息
+
+   --v$latch_children
+     存储子latch信息的视图，在sga中有些资源使用多个latch保护，比如library cache，这些多个latch保护同一个资源，称为子latch
+     v$latch_children和v$latch一样
+
+
+
+latch优化的思路：
+   --awr报告是比较的入口
+
+   --通过动态视图v$latch，可以分析当前系统的latch资源情况
+
+   --确定争用最大量的latch
+
+   --分析可能的原因
+
+   --从应用层面和数据库层面考虑解决途径
+
+
+latch--总结
+   是数据库资源的管理机制
+
+   业务层面无法感知
+   
+   良好的系统设计，可以有效的减少latch的争用
+     --绑定变量
+     --减少热块
 
 
 
