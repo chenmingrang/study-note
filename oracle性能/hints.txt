@@ -1,0 +1,39 @@
+hints（提示）
+   是用来约束优化器行为的一种技术
+   --优化器模式
+       all_rows
+       first_rows
+
+   --数据访问路径
+       基于表的数据访问
+       基于索引的数据访问
+
+    --表的关联
+        NL(nested join)
+	MJ(merge join)
+	HJ(hash join)
+
+
+hints使用范畴
+    尽量避免在开发中使用（all_rows 和first_rows可以适当使用）
+    辅助dba用来做性能排查和优化
+
+
+ 访问路径相关的hints
+     /*full(tableName)*/全表扫描(可以实现并行)并不总是很差
+     /*index(tablename indexname)*/和/*no_index(tablename indexname)*/
+     /*index_ffs(tablename indexname)*/(index fast full scan)与全表扫描的机制一样，只不过扫描索引，在做索引字段统计时很高效
+     数据块小的时候index range scan 比index fast full scan高效
+     /*index_ss(tablename indexname)*/index skip scan联合索引，当第一个索引字段没用出现时，直接跳过用后面的字段
+
+
+  
+ 显示统计信息
+--set autotrace trace exp stat;
+
+
+
+
+
+
+

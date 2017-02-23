@@ -51,7 +51,35 @@ cbo的工作模式
 --查看表的选择性(selectivity)
     select column_name,num_distinct from user_tab_col_statistics where table_name='xxxx' order by 2 desc;
 
+
 --查看索引的选择性
    select index_name,ditinct)keys from user_indexes where table_name='xxxx';
 
+
+几个非常重要的概念--cardinality（rows）
+   在执行计划中表示每一步操作返回的记录数
+   cbo通过对这个值的权重计算，决定使用哪一种访问方式
+
+
+索引--clustering factor（值越大表示表数据块跳转越多）
+     select index_name,clustering_factor from user_indexs where table_name='XXXX';
+     影响索引成本的评估
+
+
+cbo的核心--成本的计算
+     数据访问成本估算
+         --I/O成本的估算
+	       全表扫描（多数据块）
+	       索引（单数据块，多数据块）
+	 --cpu成本的估算
+
+     数据处理的成本   
+         --cpu的成本估算
+
+
+优化器总结
+      是oracle不断完善的数学模型
+      每一个版本的机制有较大的差异
+      i/o成本最为关键（执行计划）
+      无法对sql进行智能优化
 
