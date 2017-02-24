@@ -17,19 +17,76 @@ hints（提示）
 hints使用范畴
     尽量避免在开发中使用（all_rows 和first_rows可以适当使用）
     辅助dba用来做性能排查和优化
+    查看数据的参数控制优化模式：
+          show parameter optimizer_mode
+    alter session set optimizer_mode =first_rows;
 
 
  访问路径相关的hints
-     /*full(tableName)*/全表扫描(可以实现并行)并不总是很差
-     /*index(tablename indexname)*/和/*no_index(tablename indexname)*/
-     /*index_ffs(tablename indexname)*/(index fast full scan)与全表扫描的机制一样，只不过扫描索引，在做索引字段统计时很高效
-     数据块小的时候index range scan 比index fast full scan高效
-     /*index_ss(tablename indexname)*/index skip scan联合索引，当第一个索引字段没用出现时，直接跳过用后面的字段
+     /*+full(tableName)*/全表扫描(可以实现并行)并不总是很差
+     /*+index(tablename indexname)*/和/*no_index(tablename indexname)*/
+     /*+index_ffs(tablename indexname)*/(index fast full scan)与全表扫描的机制一样，只不过扫描索引，在做索引字段统计时很高效
+     数据块小的时候index range scan 比index fast full scan高效，适合范围扫描
+     /*+index_ss(tablename indexname)*/index skip scan联合索引，当第一个索引字段没用出现时，直接跳过用后面的字段
 
 
   
  显示统计信息
 --set autotrace trace exp stat;
+
+
+表关联的hints--NL
+     --/*+use_nl(tbalename1  tablename2)*/   Nested loop joins
+
+     NL的场景：
+         --关联中有一个表比较小
+	 --被关联表的关联字段上有索引
+	 --索引的键值不应该重复率很高
+
+
+表关联的hints--HJ
+    --/*+use_hash(tbalename1  tablename2)*/  hash join
+  
+  hash join的应用场景
+   --一个大表，一个小表 
+   --表上没有索引
+   --返回结果集比较大
+
+
+表的关联hints-Merge join
+   --/*+use_merger(tbalename1  tablename2)*/ merge join
+
+   --将两个结果集分别排序
+   --对排序后的结果集进行连接
+
+
+/*************************************cbo时代不用关心哪张表做驱动表，cbo会自动选择*************************************/
+表关联的hints--leading
+    --/*+leading(tablename1 tablename2 ...)*/  规定表连接的顺序,指定驱动表
+
+
+
+其他hints
+   /*+append*/  以直接加载的方式插入数据
+   alter table t nologging;
+  insert  /*+append*/   into t select * from dba_object;
+
+ /*+dynamic sampling(num)*/ 设置动态采样的级别
+
+ /*+parallel(tablename  num)*/指定并行度
+
+   /*+driving_site(tablename)*/  决定一个分布式事物中，操作在哪个节点上完成
+
+ /***************************************比较有用***************************************/
+ /*+cardinality(tablename  amount)*/   模拟一个结果集得到cardinality，模拟数据量的多少。
+
+
+
+
+
+
+
+
 
 
 
