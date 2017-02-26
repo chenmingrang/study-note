@@ -1,0 +1,53 @@
+最简单的等待 （客户端为发送信息）
+   select distinct sid from v$mystat;
+   select sid,event,state from v$session where sid=xx;
+   得到结果：
+       xx   sql*net message from client               waited short time
+
+
+造成等待--三种情况
+    --请求的资源太忙，需要等待资源释放
+    --会话处于空闲状态，等待新的任务
+    --会话被阻塞，需要等待阻塞的解除
+
+
+等待事件的理解：
+	--数据库处理数据，只要有时间的消耗，就会有等待事件。
+	--性能和等待是一个矛盾体
+	--理解出现某种等待事件的原因
+	--结合业务，主观的看待等待事件
+	      --制定基线，发现异常等待事件；
+	      --接受合理的等待事件
+     
+
+等待的定位方式--sql级别
+   10046 event
+
+等待事件定位方式--会话级别
+    v$session_wait
+
+等待事件定位方式--系统级别
+    AWR报告（v$system_event）
+    Top5 times event
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
