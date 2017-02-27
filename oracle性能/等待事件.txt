@@ -31,12 +31,42 @@
     Top5 times event
 
 
+常见的等待事件--ilde wait events
+     进程由于无事可做，等待分配任务
+     空等待意味着空闲
+     空闲，还意味着其他的事情。。。（相对而言）
 
 
+常见的等待事件--db file scattered read(分散读)
+      当数据块以multiblock read的行式被读取到SGA中时：
+          --FTS(full table scan)
+	  --IFFS(index fast full scan)
+	  --db_file_multiblock_read_count
+
+       怎么解决？
+           --无需解决（正常现象）
+	   --考虑索引
+	   --考虑并行
 
 
+常见的等待事件--db file sequential read
+    当把一个数据读入SGA时，发生db file sequential等待
+    单数据块的读，通常指索引的读取，但不绝对
+        --有些索引读取会发生'db file scattered read'等待
+	--有时候表的读取会发生db file sequential等待
+	--undo的读取，会使用db file Sequential
 
+      如何解决
+          --无需解决
+	  --sql语句的效率
+	  --考虑其他方式的索引
+	        ☆复合索引
+	        ☆位图索引
+	        ☆全文索引
+	  --全表扫描+并行
+	  --改善磁盘I/O
 
+ 
 
 
 
