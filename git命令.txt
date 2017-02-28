@@ -195,6 +195,9 @@ $ git merge --no-ff -m "merge with no-ff" dev
   $ git check-ignore -v <filename>
 3.强制添加文件到Git
   $ git add -f <filename>
+4.模式及说明（以“/”开头表示同级目录下）
+    模式1：/out/** 忽略out目录下所有的文件
+    模式2：**/foo/bar  匹配文件或目录“bar”在直接位于目录“foo”下的任何地方
 
 
 
