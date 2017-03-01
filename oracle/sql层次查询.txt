@@ -3,3 +3,12 @@ select
 from emp where level<=2 --层次小于等于2
 connect by  prior empno = mgr --连接条件
 start with empno=7839   --开始的节点
+
+
+select 
+     emp.ename,emp.empno,emp.job,emp.sal,emp.deptno,
+     level, lpad('|-',2*level,' ')|| ename as "Ename",
+     connect_by_root ename "Manager",
+     sys_connect_by_path(ename, '/') "Path",
+     decode(connect_by_isleaf,0,'root','1','leaf') "isleaf"
+from emp start with mgr is null connect by prior empno=mgr
