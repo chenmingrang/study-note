@@ -38,15 +38,44 @@ oracle索引类型
 
 
 
+分区表的几点注意（作用主要体现在数据管理上，删除一个分区，则删除分区上的数据）
+     --表分区后，分区变成各自的段，而表成一个逻辑名称
+     --分区裁剪
+
+     create table t_p(id int)
+     partition by range(id)
+     (partition p1 values less than(100),
+      partition p2 values less than(200),
+      partition pm values less than(maxvalue)
+      );
 
 
+分区种类
+     --list        partitioning（种类比较少时采用）
+     --range   partition(尤其时间)
+     --hash     partition（数据不可控，容易做数据均匀构造）
 
 
+分区组合（子分区）
+  range-range
+  list-range
+  list-hash
+  list-list
 
 
+分区索引（误区：分区索引好于全局索引，分区索引与全局索引效率差不多，某些时候会更差）
+    --local index（对分区而言）
+       表的DML操作无需rebuil索引
+       可以非常方便的管理数据
+       
+
+    --全局索引
+       表的DDL操作会导致索引无效
 
 
-
+分区索引与全局索引
+       --分区索引的目的在与数据的管理而非性能
+       --一个分区表上如果经常有DDL操作，将会导致全局索引无效，需要对索引重建，此时创建分区索引更加合适。
 
 
 
