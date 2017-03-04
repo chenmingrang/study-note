@@ -13,17 +13,26 @@ CBO的数据来源
 
 
 没用分析的情况下
-    select extents,blocks from user_segments where segment_name = 'T';
-      EXTENTS     BLOCKS
-     ---------- ----------
+       create table t as select * from dba_objects;
+       创建一张新表
+        select extents,blocks from user_segments where segment_name = 'T';
+        EXTENTS     BLOCKS
+       ---------- ----------
 	24       1152
    
-     select count(*) from t;
+        --未做分析时
+	select num_rows,blocks from user_tables where table_name='T';
+
+	  NUM_ROWS     BLOCKS
+	----------               ----------
+
+
+       select count(*) from t;
          COUNT(*)
        ----------
             72550
 
-     select /*+dynamic_sampling(t 0)*/ count(*) from t;
+      select /*+dynamic_sampling(t 0)*/ count(*) from t;
 
         执行计划
 	----------------------------------------------------------
@@ -64,7 +73,7 @@ CBO的数据来源
 
     数据字典
        --user_tables,user_tab_partitions
-       --user)indexs,user)ind_partitions
+       --user_indexes,user_ind_partitions
        --user_tab_col_statistics
 	  
 
@@ -76,7 +85,7 @@ DBMS_STATS包和ANALYZE命令
 	--无法对分析数据进行管理
 
      DBMS_STATS
-        --专门为CBO提欧共信息来源
+        --专门为CBO提供信息来源
 	--可以进行数据分析的多种组合
 	--可以对分区进行分析
 	--可以进行分析数据管理
@@ -85,12 +94,36 @@ DBMS_STATS包和ANALYZE命令
 
 oracle的自动信息收集
     --11g默认设置
-    --user_tab_modification跟踪表的修改
+    --user_tab_modifications跟踪表的修改,查看表的修改记录，exec dbms_stats.flush_database_monitoring_info;
+	    select inserts,updates,deletes,timestamp from user_tab_modifications where table_name='T';
+
+	   INSERTS    UPDATES      DELETES         TIMESTAMP
+	   ----------   ----------         ----------        --------------
+		 0           196                  0                    04-3月 -17
     --当分析对象的数据修改超过10%时，oracle会重新分析
     --定时任务GATHER_STATS_JOB负责重新定时收集过旧数据的信息
 
 
 
+是否要完全依赖自动分析
+      --当数据库执行计划还不错的时候，可以依赖自动分析
+           比如，oltp系统
+
+      --否则，需要手工介入
+          比如，olap系统
+     
+      --没有一个适合所有系统的数据分析方法
+
+
+数据分析示例
+   分析表
+   exec dbms_stats.gather_table_stats(user,'t');
+   exec dbms_stats.gather_table_stats(user,'t',cascade=>true);--级联分析索引
+
+   分析索引
+   exec dbms_stats.gather_index_stats(user,index_name); 
+
+   参数详见oracle官方文档
 
 
 
