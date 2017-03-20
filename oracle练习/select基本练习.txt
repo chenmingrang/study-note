@@ -1,0 +1,51 @@
+--更新位于达拉斯的部门的雇员薪水为现在的1.2倍
+update emp e set sal = sal * 1.2 where exists (select 1 from dept d where e.deptno = d.deptno and d.loc='DALLAS');
+select * from emp where deptno=(select deptno from dept where loc='DALLAS');
+rollback;
+
+--等值连接
+select d.loc,d.dname,e.empno,e.ename from emp e,dept d where e.deptno=d.deptno;
+--自连接
+select m.ename "MANAGER" ,m.empno,e.ename,e.empno,e.mgr from emp e,emp m where e.mgr = m.empno;
+--笛卡尔积（3*3的加法表）
+select a||'+'||b "算式",(a+b) "结果" from (select rownum a from all_objects where rownum<4)a,
+                                          (select rownum b from all_objects where rownum<4)b;
+--内连接
+select e.empno,e.ename,e.sal,s.grade from emp e,salgrade s where e.deptno=10 and e.sal between s.losal and s.hisal; 
+select e.empno,e.ename,e.sal,s.grade from emp e inner join salgrade s on e.deptno=10 and e.sal between s.losal and s.hisal; 
+
+--反连接
+select * from emp where deptno not in (select deptno from dept where loc in ('NEW YORK','DALLAS'));--NOT IN 结果集不能为空
+select * from dept where deptno not in (select deptno from emp);
+
+--半连接
+  --查询部门在纽约的雇员信息
+select * from emp a where exists (select 1 from dept d where loc ='NEW YORK' and a.deptno=d.deptno);
+select e.* from emp e,dept d where e.deptno = d.deptno and d.loc ='NEW YORK';
+  --如果一个雇员的薪水高于2900，那么查出其所在部门的信息
+select d.* from dept d where exists (select 1 from emp e where e.deptno = d.deptno and e.sal>2900);
+select distinct d.* from dept d,emp e where d.deptno = e.deptno and e.sal>2900;--需要去重
+
+--查询出所有部门的职位为经理的雇员数
+select b.deptno,count(empno) from dept b left join emp a on a.deptno = b.deptno and a.job = 'MANAGER' group by b.deptno;
+
+--查询没有雇员的部门
+select * from dept d left join emp e on d.deptno = e.deptno where e.empno is null; 
+
+--with语句
+--使用dua构造出1到128的
+with a as (select 1 from dual union all select 1 from dual)
+select rownum from a,a,a,a,a;--2的5次方,笛卡尔积
+
+--做一个5*5的乘法表
+with multiplier as (select rownum n from dual connect by rownum<6)
+select a.n||'*'||b.n "算式",a.n*b.n from multiplier a ,multiplier b;
+
+--池塘边上有若干牛和鹅，总共有15个头和42条腿，请问牛和鹅各多少只
+with a as (select 1 from dual union all select 1 from dual),
+     b as (select rownum n from a,a,a,a)--最多16只,重复使用a
+select x.n num_of_bull,y.n num_of_goose from b x,b y where x.n*4+y.n*2 = 42 and x.n + y.n = 15;
+
+
+
+
