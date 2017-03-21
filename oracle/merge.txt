@@ -1,0 +1,33 @@
+DROP TABLE T1;
+create table t1 (name varchar2(20),value number);
+insert into t1 values ('A',10);
+insert into t1 values ('B',20);
+DROP TABLE T2;
+create table t2 (name varchar2(20),value number);
+insert into t2 values ('A',30);
+insert into t2 values ('C',20);
+COMMIT;
+
+MERGE INTO T2
+  USING T1 ON(T1.NAME=T2.NAME)
+WHEN MATCHED THEN 
+  UPDATE SET T2.VALUE = T1.VALUE + T2.VALUE
+WHEN NOT MATCHED THEN
+  INSERT VALUES (T1.NAME,T1.VALUE);
+ 
+SELECT * FROM T2;
+
+--仅更新目标表
+merge into t2 
+   using t1 on (t1.name = t2.name)
+when matched then
+   update set t2.value = t1.value + t2.value;
+  
+insert into t1 values('D',100);
+commit;
+
+--仅仅插入
+merge into t2 
+   using t1 on (t1.name=t2.name)
+when not matched then
+   insert (name,value) values (t1.name,t1.value);
