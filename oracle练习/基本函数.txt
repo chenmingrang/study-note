@@ -1,0 +1,85 @@
+--cast将某些常量或变量的类型强制转换为制定类型
+/*select cast('1234' as number) from dual;
+select cast(12 as number) from dual;
+select cast(12 as number(9))from dual;
+select cast(1.2345e4 as number(5)) from dual;
+select cast(sal as number(9)) from emp;
+
+--select cast(1.2345e8 as number(8))from dual;--精度不够
+--select cast(1.2345e8 as number(9,4))from dual;--精度不够
+
+select cast(1.2345e8 as float(7)) from dual;
+select cast(1.2345e8 as number)from dual;
+select cast(1.2345e8 as float(11)) from dual;*/
+
+--日期类型
+--to_date
+select to_date('56','ss') from dual;--2017/3/1 0:00:56
+select to_date('56','yy') from dual;--2056/3/1
+select date'2016-04-05' from dual;--2016/4/5
+
+
+--to_timestamp
+select systimestamp from dual;--23-3月 -17 10.52.54.789000 下午 +08:00
+select to_timestamp('05 13:48:22.778','dd hh24:mi:ss.ff5') from dual;--05-3月 -17 01.48.22.778000000 下午
+select to_timestamp('05 13:48','yy hh24:mi'） from dual;--01-3月 -05 01.48.00.000000000 下午
+
+select to_char(sysdate,'yyyy"年"mm"月"dd"日"') from dual;--2017年03月23日
+
+
+--char
+/*char(10) 与 char(10 byte) 一致；而char(10 char)能保存12个字符*/
+
+
+--ceil向上取整
+select ceil(-3.45) from dual;--  -3
+select ceil(3.45) from dual;--  4
+select ceil(-3.6) from dual;--  -3
+
+--floor向下取整
+select floor(4.6) from dual;--4
+select floor(-4.6) from dual;-- -5
+select floor(-4.4) from dual;--   -5
+select floor(4.4) from dual;-- 4
+
+--round四舍五入
+select round(1.45) from dual;-- 1
+select round(4.56) from dual;-- 5
+select round(-4.56) from dual;-- -5
+select round(-4.4) from dual;--  -4
+
+--trunc截断
+select trunc(3.56) from dual;--  3
+select trunc(-5.88) from dual;--  5
+select trunc(-5.88,1) from dual;-- -5.8
+
+--mod求余数
+select mod(13,4)from dual;--  1
+select mod(-13,4) from dual;--  -1
+select mod(15,4) from dual;--  3
+
+---remainder求余数
+select remainder(13,4)from dual;--  1
+select remainder(-13,4) from dual;--  -1
+select remainder(15,4) from dual;--  -1
+select remainder(14,4) from dual;-- -2
+
+--to_char
+select 'TRUE' from dual where date'2017-01-01'+30 = date '2017-01-31';--  TRUE
+select 'TRUE' from dual where date'2017-01-01'+29+1/12 = to_date('2017-01-30 02','yyyy-mm-dd hh24');--  TRUE
+
+select add_months(date'2010-02-28',24) from dual;--2012/2/29闰年为2月29
+select add_months(date'2012-02-29',24) from dual;--2014/2/28
+select add_months(date'2012-02-28',24) from dual;--2014/2/28
+
+--对日期进行四舍五入
+select round(to_date('12:25:35','hh:mi:ss'),'mi') from dual;--2017/3/1 12:26:00
+select round(to_date('12:25:29','hh:mi:ss'),'mi') from dual;--2017/3/1 12:25:00
+
+select next_day(sysdate,4) from dual;--下个星期几（还未过）,1表示星期天
+select last_day(to_date('2014-02-05','yyyy-mm-dd')) from dual;--2014/2/28 当前月的最后一天
+select last_day(to_date('2014-07-09','yyyy-mm-dd')) from dual;--2014/7/31 当前月的最后一天
+
+
+
+
