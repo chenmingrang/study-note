@@ -81,5 +81,50 @@ select last_day(to_date('2014-02-05','yyyy-mm-dd')) from dual;--2014/2/28 当前月
 select last_day(to_date('2014-07-09','yyyy-mm-dd')) from dual;--2014/7/31 当前月的最后一天
 
 
+----------------------------2017-03-24---------------------------------------
 
+select concat(concat('chen',' ming'),' rang') from dual;--chen ming rang
+select lpad('1234',9,'#') from dual;--#####1234
+select rpad('1234',9,'#')from dual;--1234#####
+select lpad('123456',4,'#') from dual;--1234
+
+--第二个参数为需要剪切的字符的集合
+select ltrim('aaabbwwseee','aababwe') from dual;--seee  
+select rtrim('wwederasdsatsddsad','asd') from dual;--wwederasdsat
+
+select trim('   aaaddefr  ') from dual;--aaaddefr  去掉两边的空格
+--括号里from左边的参数只能是一个字符！！！！！
+select trim('s' from 'saabbdwwcaaab') from dual;--aabbdwwcaaab   
+
+
+select substr('chenmingrang@126.com',5) from dual;--mingrang@126.com
+select substr('chenmingrang@126.com',5,4) from dual;--ming
+select substr('chenmingrang@126.com',-3,3) from dual;--com
+select substr('chenmingrang@126.com',-3,13) from dual;--com
+
+
+--找到第一个n出现位置并返回该位置
+select instr('chenmingrang','n') from dual;--4  
+select instr('chenmingrang','ran') from dual;--9
+
+--第三个参数不写默认转化为空''
+select replace('Today is a good day. ',' ') from dual;--Todayisagoodday.
+select replace('Today is a good day. ',' ','#') from dual;--Today#is#a#good#day.#
+
+--translate有意思的函数
+select translate('Today is a good day. ',' ','##') from dual;--Today#is#a#good#day.#
+select translate('(+0086-)010-68998877','0(+)-','0') from dual;--008601068998877  去掉所有的(+)-
+select translate('(+0086-)010-68998877','0(+)-8','0') from dual;--00601069977     去掉所有的(+)-8
+
+--逐个进行比对，相同则保留，相同位置不同则替换为对应位置的字符
+--0(+)-8
+--0#$
+select translate('(+0086-)010-68998877','0(+)-8','0#$') from dual;--#00601069977   保留所有的0，将第一个括号换成#，并且去掉+)-8
+select translate('(+0086-)010-6(899(8877','0(+)-8','#$') from dual;--$##6#1#6$99$77   将所有的0替换为#，将(替换为$，并且去掉+)-8
+
+
+select greatest(sysdate,date '2017-04-01',to_date('2008-02-21','yyyy-mm-dd')) from dual;--2017/4/1
+
+select nvl(comm,0) from emp; --comm为空时转化为0
+select ename,nvl2(comm,(sal+comm)*12,sal*12) "年薪" from emp;
 
