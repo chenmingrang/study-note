@@ -1,6 +1,6 @@
-/**********************************************·ÖÎöº¯Êı**********************************************/
+/**********************************************åˆ†æå‡½æ•°**********************************************/
 
---ÅÅÃûrow_number(Á¬ĞøÎŞÖØ¸´) rank(²»Á¬ĞøÓĞÖØ¸´) dense_rank(Á¬ĞøÓĞÖØ¸´)
+--æ’årow_number(è¿ç»­æ— é‡å¤) rank(ä¸è¿ç»­æœ‰é‡å¤) dense_rank(è¿ç»­æœ‰é‡å¤)
 with nums as (select '1' t,rownum*10 cnt from dual connect by rownum<5 union all 
               select '2' t,rownum*40-10 cnt from dual connect by rownum<3)
 select t,cnt,row_number() over(order by cnt desc,t desc) rn,
@@ -9,12 +9,12 @@ select t,cnt,row_number() over(order by cnt desc,t desc) rn,
   from nums;
    
       
---·Ö×éÅÅÃû
+--åˆ†ç»„æ’å
 /*
-1.ÅÅÃû·ÖÎöº¯Êı²»ĞèÒª²ÎÊı
-2.ÅÅÃû·ÖÎöº¯ÊıÀïµÄorder by×Ó¾äÊ±±ØĞëµÄ
-3.partition byºÍorder byºó¾ù¿ÉÒÔ¸ú¶àÁĞ
-4.Ö»ÒªÃ»ÓĞpartition byµÄÇé¿öÏÂ£¬rownum²ÅÄÜ×öµ½ºÍrow_numberÍ¬ÑùµÄÊÂÇé
+1.æ’ååˆ†æå‡½æ•°ä¸éœ€è¦å‚æ•°
+2.æ’ååˆ†æå‡½æ•°é‡Œçš„order byå­å¥æ—¶å¿…é¡»çš„
+3.partition byå’Œorder byåå‡å¯ä»¥è·Ÿå¤šåˆ—
+4.åªè¦æ²¡æœ‰partition byçš„æƒ…å†µä¸‹ï¼Œrownumæ‰èƒ½åšåˆ°å’Œrow_numberåŒæ ·çš„äº‹æƒ…
 */
 select dept_id,sale_date,goods_type,sale_cnt,
        row_number() over (partition by dept_id order by sale_cnt desc) rn,
@@ -24,14 +24,14 @@ select dept_id,sale_date,goods_type,sale_cnt,
  where trunc(sale_date,'MM')=date'2013-04-01';--to_date('2013-04','yyyy-mm');
 
 
---ÏàÁÚº¯Êı
---LAGºÍLEADÓÃÓÚ»ñÈ¡ÏàÁÚĞĞµÄÊı¾İ£¬ÒÔ±ã½øĞĞÏà¹Ø¼ÆËã
---LAGÊÇÈ¡µ½ÅÅĞòºóµ±Ç°¼ÇÂ¼Ö®Ç°µÄ¼ÇÂ¼
---LAEDÊÇÈ¡µ½ÅÅĞòºóµ±Ç°¼ÇÂ¼Ö®ºóµÄ¼ÇÂ¼
-/*²ÎÊıËµÃ÷*/
---LAG/LEAD(v,d,dv)   n±íÊ¾Î»ÒÆ£¬±ØĞëÊÇ0»òÊÇÕıÕûÊı£¬dvÊÇÔÚÃ»ÓĞÈ¡µ½¶ÔÓ¦ÖµÊ±µÄÄ¬ÈÏÖµ£»nÄ¬ÈÏÊÇ1£¬dvÄ¬ÈÏÊÇnull
---ÏàÁÚÀà·ÖÎöº¯ÊıºóÃæorder by×Ó¾äÊÇ±ØĞëµÄ
---partition byºÍorder by ºó¾ù¿ÉÒÔ¸ú¶àÁĞ
+--ç›¸é‚»å‡½æ•°
+--LAGå’ŒLEADç”¨äºè·å–ç›¸é‚»è¡Œçš„æ•°æ®ï¼Œä»¥ä¾¿è¿›è¡Œç›¸å…³è®¡ç®—
+--LAGæ˜¯å–åˆ°æ’åºåå½“å‰è®°å½•ä¹‹å‰çš„è®°å½•
+--LAEDæ˜¯å–åˆ°æ’åºåå½“å‰è®°å½•ä¹‹åçš„è®°å½•
+/*å‚æ•°è¯´æ˜*/
+--LAG/LEAD(v,d,dv)   nè¡¨ç¤ºä½ç§»ï¼Œå¿…é¡»æ˜¯0æˆ–æ˜¯æ­£æ•´æ•°ï¼Œdvæ˜¯åœ¨æ²¡æœ‰å–åˆ°å¯¹åº”å€¼æ—¶çš„é»˜è®¤å€¼ï¼›né»˜è®¤æ˜¯1ï¼Œdvé»˜è®¤æ˜¯null
+--ç›¸é‚»ç±»åˆ†æå‡½æ•°åé¢order byå­å¥æ˜¯å¿…é¡»çš„
+--partition byå’Œorder by åå‡å¯ä»¥è·Ÿå¤šåˆ—
 select deptno,ename,
        lag(ename,2,'AAAAA') over(partition by deptno order by ename) lower_name,
        lead(ename,2,'ZZZZZ') over(partition by deptno order by ename)higher_name
@@ -39,13 +39,13 @@ select deptno,ename,
   
   
   
---Í³¼Æ
+--ç»Ÿè®¡
 --sum
 --avg
 --max/min
 --first_value/last_value
 
---demo1Çó³öÃ¿¸ö²¿ÃÅ°´ÔÂÀÛ¼ÆÏúÊÛ¶î
+--demo1æ±‚å‡ºæ¯ä¸ªéƒ¨é—¨æŒ‰æœˆç´¯è®¡é”€å”®é¢
 select dept_id,to_char(sale_date,'yyyy-mm') sale_month,
                   sum(sale_cnt) month_cnt
              from sales
@@ -56,10 +56,10 @@ with t as (select dept_id,to_char(sale_date,'yyyy-mm') sale_month,
          group by dept_id,to_char(sale_date,'yyyy-mm'))
 select dept_id,sale_month,month_cnt,
        sum(month_cnt) over( partition by dept_id order by sale_month) cum_month_sale_cnt
-  from t;--ÀÛ¼ÆÏúÊÛ¶î
+  from t;--ç´¯è®¡é”€å”®é¢
   
 
---demo2Çó³öÃ¿¸ö²¿ÃÅ°´ÏúÊÛ»õÎïÀà±ğµÄÀÛ¼ÆÏúÊÛ¶î(°´»õÎïÀà±ğ´úÂëÕıĞòÅÅÁĞ)ÒÔ¼°Ã¿¸ö»õÎï°´²¿ÃÅµÄÀÛ¼ÆÏúÊÛ¶î(°´²¿ÃÅ±àºÅÕıĞòÅÅÁĞ)
+--demo2æ±‚å‡ºæ¯ä¸ªéƒ¨é—¨æŒ‰é”€å”®è´§ç‰©ç±»åˆ«çš„ç´¯è®¡é”€å”®é¢(æŒ‰è´§ç‰©ç±»åˆ«ä»£ç æ­£åºæ’åˆ—)ä»¥åŠæ¯ä¸ªè´§ç‰©æŒ‰éƒ¨é—¨çš„ç´¯è®¡é”€å”®é¢(æŒ‰éƒ¨é—¨ç¼–å·æ­£åºæ’åˆ—)
 with t as (select dept_id,goods_type,sum(sale_cnt) goods_sale_cnt 
              from sales
          group by dept_id,goods_type)
@@ -69,7 +69,7 @@ select dept_id,goods_type,goods_sale_cnt,
   from t;
 
 
---demo3Çó³öÃ¿¸ö²¿ÃÅÃ¿ÖÖ»õÎïµÄÏúÊÛ¶îÓë¸Ã»õÎïÔÚ¹«Ë¾¸÷²¿ÃÅÆ½¾ùÏúÊÛ¶îÖ®¼äµÄ²îÖµ
+--demo3æ±‚å‡ºæ¯ä¸ªéƒ¨é—¨æ¯ç§è´§ç‰©çš„é”€å”®é¢ä¸è¯¥è´§ç‰©åœ¨å…¬å¸å„éƒ¨é—¨å¹³å‡é”€å”®é¢ä¹‹é—´çš„å·®å€¼
 with t as (select dept_id,goods_type,sum(sale_cnt) goods_sale_cnt 
              from sales
          group by dept_id,goods_type)

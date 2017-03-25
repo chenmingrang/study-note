@@ -1,5 +1,5 @@
 create table sales(dept_id varchar2(6), sale_date date, goods_type varchar2(4), sale_cnt number(10));
-COMMENT ON TABLE  SALES IS '½¨Á¢µÄÏúÊÛÊı¾İ²âÊÔ±í¡£'
+COMMENT ON TABLE  SALES IS 'å»ºç«‹çš„é”€å”®æ•°æ®æµ‹è¯•è¡¨ã€‚'
 /
 Insert into LW_SALES
    (DEPT_ID, SALE_DATE, GOODS_TYPE, SALE_CNT)
