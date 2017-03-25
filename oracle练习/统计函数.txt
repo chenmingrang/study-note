@@ -1,0 +1,81 @@
+/**********************************************分析函数**********************************************/
+
+--排名row_number(连续无重复) rank(不连续有重复) dense_rank(连续有重复)
+with nums as (select '1' t,rownum*10 cnt from dual connect by rownum<5 union all 
+              select '2' t,rownum*40-10 cnt from dual connect by rownum<3)
+select t,cnt,row_number() over(order by cnt desc,t desc) rn,
+       rank()over(order by cnt desc) rk,
+       dense_rank()over(order by cnt desc) drk 
+  from nums;
+   
+      
+--分组排名
+/*
+1.排名分析函数不需要参数
+2.排名分析函数里的order by子句时必须的
+3.partition by和order by后均可以跟多列
+4.只要没有partition by的情况下，rownum才能做到和row_number同样的事情
+*/
+select dept_id,sale_date,goods_type,sale_cnt,
+       row_number() over (partition by dept_id order by sale_cnt desc) rn,
+       rank () over (partition by dept_id order by sale_cnt desc) rk,
+       dense_rank () over (partition by dept_id order by sale_cnt desc) drk
+  from sales
+ where trunc(sale_date,'MM')=date'2013-04-01';--to_date('2013-04','yyyy-mm');
+
+
+--相邻函数
+--LAG和LEAD用于获取相邻行的数据，以便进行相关计算
+--LAG是取到排序后当前记录之前的记录
+--LAED是取到排序后当前记录之后的记录
+/*参数说明*/
+--LAG/LEAD(v,d,dv)   n表示位移，必须是0或是正整数，dv是在没有取到对应值时的默认值；n默认是1，dv默认是null
+--相邻类分析函数后面order by子句是必须的
+--partition by和order by 后均可以跟多列
+select deptno,ename,
+       lag(ename,2,'AAAAA') over(partition by deptno order by ename) lower_name,
+       lead(ename,2,'ZZZZZ') over(partition by deptno order by ename)higher_name
+  from emp;
+  
+  
+  
+--统计
+--sum
+--avg
+--max/min
+--first_value/last_value
+
+--demo1求出每个部门按月累计销售额
+select dept_id,to_char(sale_date,'yyyy-mm') sale_month,
+                  sum(sale_cnt) month_cnt
+             from sales
+         group by dept_id,to_char(sale_date,'yyyy-mm');
+with t as (select dept_id,to_char(sale_date,'yyyy-mm') sale_month,
+                  sum(sale_cnt) month_cnt
+             from sales
+         group by dept_id,to_char(sale_date,'yyyy-mm'))
+select dept_id,sale_month,month_cnt,
+       sum(month_cnt) over( partition by dept_id order by sale_month) cum_month_sale_cnt
+  from t;--累计销售额
+  
+
+--demo2求出每个部门按销售货物类别的累计销售额(按货物类别代码正序排列)以及每个货物按部门的累计销售额(按部门编号正序排列)
+with t as (select dept_id,goods_type,sum(sale_cnt) goods_sale_cnt 
+             from sales
+         group by dept_id,goods_type)
+select dept_id,goods_type,goods_sale_cnt,
+       sum(goods_sale_cnt) over (partition by dept_id order by goods_type) cum_gsc_goods,
+       sum(goods_sale_cnt) over (partition by goods_type order by dept_id) cum_gsc_dept
+  from t;
+
+
+--demo3求出每个部门每种货物的销售额与该货物在公司各部门平均销售额之间的差值
+with t as (select dept_id,goods_type,sum(sale_cnt) goods_sale_cnt 
+             from sales
+         group by dept_id,goods_type)
+select dept_id,goods_type,goods_sale_cnt,
+       round(avg(goods_sale_cnt) over (partition by goods_type),2) avg_goods_sale_cnt,
+       goods_sale_cnt -round(avg(goods_sale_cnt) over(partition by goods_type),2) dv_goods_sale_cnt
+  from t;
+
+/*===========================================2017-03-26================================================*/
