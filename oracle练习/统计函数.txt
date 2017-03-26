@@ -79,3 +79,120 @@ select dept_id,goods_type,goods_sale_cnt,
   from t;
 
 /*===========================================2017-03-26================================================*/
+
+
+--demo3传统方式写法(相比分析函数传统方式效率低)
+  with t as (select dept_id,goods_type,sum(sale_cnt) goods_sale_cnt 
+               from sales
+           group by dept_id,goods_type),
+      t1 as (select goods_type,round(avg(goods_sale_cnt),2) avg_goods_sale_cnt 
+               from t 
+           group by goods_type)
+  select t.dept_id,t.goods_type,t.goods_sale_cnt,t1.avg_goods_sale_cnt,
+         t.goods_sale_cnt-t1.avg_goods_sale_cnt dv_goods_sale_cnt
+    from t,t1
+   where t.goods_type = t1.goods_type
+order by 2,1
+
+--demo4 统计分析函数--MAX/MIN
+--货物G01每月的最高和最低销售额对应的部门（如有多个部门按照部门ID列出最小的一个，如某部门某月无销售额则不做统计）
+--传统写法
+    with t as (select dept_id,to_char(sale_date,'yyyy-mm') sale_month,
+                      sum(sale_cnt) goods_sale_cnt 
+                 from sales
+                where goods_type='G01'
+             group by dept_id,to_char(sale_date,'yyyy-mm')),
+         t1 as (select sale_month,max(goods_sale_cnt) max_gsc,
+                       min(goods_sale_cnt) min_gsc
+                  from t
+              group by sale_month)
+      select t.sale_month,
+             max(case when goods_sale_cnt = max_gsc then dept_id end) max_dept_id,
+             min(case when goods_sale_cnt = min_gsc then dept_id end) min_dept_id
+        from t,t1
+       where t.sale_month = t1.sale_month
+         and (goods_sale_cnt = min_gsc or goods_sale_cnt = max_gsc)
+    group by t.sale_month
+
+--分析函数的写法1
+ with t as (select dept_id,to_char(sale_date,'yyyy-mm') sale_month,
+                   sum(sale_cnt) goods_sale_cnt，
+                   max(sum(sale_cnt)) over (partition by to_char(sale_date,'yyyy-mm')) max_gsc,
+                   min(sum(sale_cnt)) over (partition by to_char(sale_date,'yyyy-mm')) min_gsc
+              from sales
+             where goods_type='G01'
+          group by dept_id,to_char(sale_date,'yyyy-mm'))
+      select t.sale_month,
+             min(case when goods_sale_cnt = max_gsc then dept_id end) max_dept_id,
+             min(case when goods_sale_cnt = min_gsc then dept_id end) min_dept_id
+        from t
+       where (goods_sale_cnt = min_gsc or goods_sale_cnt = max_gsc)
+    group by t.sale_month
+
+--直接写法（max/min是作为聚合函数而不是分析函数使用的，后面的first函数也是聚合函数）
+   with t as (select dept_id,to_char(sale_date,'yyyy-mm') sale_month,
+                     sum(sale_cnt) goods_sale_cnt
+                from sales 
+               where goods_type='G01'
+            group by dept_id,to_char(sale_date,'yyyy-mm'))
+   select sale_month,
+          max(dept_id) keep(dense_rank first order by goods_sale_cnt desc)  max_dept_id,
+          min(dept_id) keep(dense_rank first order by goods_sale_cnt)  min_dept_id
+     from t
+ group by sale_month;
+ 
+ 
+ 
+ --demo5货物G01每月最高销售和最低销售额对应的部门（如有多个部门按部门ID列出最小的一个，如果部门某月无销售额则不做统计）
+    with t as (select dept_id,to_char(sale_date,'yyyy-mm') sale_month,
+                      sum(sale_cnt) goods_sale_cnt
+                 from sales 
+                where goods_type='G01'
+             group by dept_id,to_char(sale_date,'yyyy-mm')),
+        t1 as (select sale_month,
+                      min(dept_id) keep (dense_rank last order by goods_sale_cnt) over (partition by sale_month) max_dept_id,
+                      min(dept_id) keep (dense_rank first order by goods_sale_cnt) over (partition by sale_month) min_dept_id
+                 from t)
+   select sale_month,max(max_dept_id),min(min_dept_id) from t1 group by sale_month;
+
+
+--demo6查出货物G03在销售当天及前12天的最大销售额(按部门和整个公司分别求出)
+
+  select dept_id,sale_date,sale_cnt,
+         max(sale_cnt) over (partition by dept_id order by sale_date range interval '12' day preceding) max_dept_slae_cnt,--部门
+         max(sale_cnt) over (order by sale_date range numtodsinterval(12,'DAY') preceding) max_sale_cnt--公司
+    from sales 
+   where goods_type='G03'; 
+
+
+--demo7 查询所有雇员的雇员职位、编号、姓名、薪水以及同职位上薪水最高和最低雇员的雇员编号（薪水相同，按雇员雇员编号倒序排列）
+select job,empno,ename,sal,
+       last_value(empno) over (partition by job order by sal,empno desc rows between unbounded preceding and unbounded following) lv,
+       first_value(empno) over (partition by job order by sal,empno desc rows between unbounded preceding and unbounded following) fv
+  from emp;
+  
+select job,empno,ename,sal,
+       max(empno) keep (dense_rank last order by sal,empno desc) over (partition by job) lv,
+       min(empno) keep (dense_rank first order by sal,empno desc) over (partition by job) fv
+  from emp;
+
+
+with t as (select (case when deptno=lag(deptno,1,-1) over (partition by deptno order by ename) then null else deptno end) deptno,
+                   ename,
+                   lag(ename,1) over (partition by deptno order by ename) lower_name,
+                   lead(ename,1) over (partition by deptno order by ename) higher_name
+              from emp),
+    t1 as (select t.*,rownum rn from t)
+select (case when deptno is not null then deptno else last_value(deptno ignore nulls) over (order by rn) end) deptno,
+       ename,lower_name,higher_name from t1;
+       
+
+
+/*===============================================统计函数的要点===============================================*/ 
+--可以没有partition by、order by和range/rows字句(即windowing子句)
+--以上子句都不是必须出现的，但若是出现windowing子句则其前必须出现order by子句
+--没有order by都就是分组统计，有order by就是分组累计
+--FIRST/LAST这两个分析函数后面只能跟partition by子句
+--FIRST_VALUE和LAST_VALUE用于获取一组有序的数据中的第一个和最后一个值，和MAX/MIN以及FIRST/LAST函数很像，但要注意区别
+--COUNT也可以作为分析函数，这和SUM/MAX等差不多，
+--另外一个函数叫RATIO_TO_REPORT，在做报表活饼状图的时候很有用
