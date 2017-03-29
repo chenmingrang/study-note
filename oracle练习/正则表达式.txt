@@ -1,0 +1,40 @@
+/*============================正则表式的优先级============================
+    1.为了避免括号，假定星号（*）有最高的优先级，接着是串接，接着是并集。
+      如果没有歧义则可以省略括号。例如（ab）c可以写成abc，而a|(b(c*))可以写成
+      a|bc*。
+    2.此优先级规则在计算机的实现中一样有效。
+*/
+
+--正则表达式概述--算法
+  --1.模式匹配算法
+  --2.快速模式匹配(KMP)是一种高效的模式匹配算法
+  
+/*********重复次数集合*********
+   贪婪       非贪婪       描述
+    *           *?         零次或多次
+    ?           ??         零次或一次
+    +           +?         一次或多次
+    {m}         {m}?       正好m次，贪婪与费贪婪一样
+    {m,}        {m,}?      至少m次
+    {m,n}       {m,n}?     最少m最多n次
+    
+ 贪婪模式会获取尽可能多的字符，而非贪婪模式会获取尽可能少的字符
+*/
+
+--优先级  圆括号 > 重复次数操作符 > 和 > 或
+
+create table ascii_tab (n number(5),s varchar2(4));
+insert into ascii_tab select rownum-1,chr(rownum-1) from dual connect by
+rownum<=129 union select 255,chr(255) from dual;
+commit;
+select * from ascii_tab;
+
+select * from ascii_tab where regexp_like(s,'[[:digit:]]');
+select * from ascii_tab where regexp_like(s,'[[:lower:]]');
+select * from ascii_tab where regexp_like(s,'[[:upper:]]');
+select * from ascii_tab where regexp_like(s,'[[:blank:]]');
+select * from ascii_tab where regexp_like(s,'[[:graph:]]');
+select * from ascii_tab where regexp_like(s,'[[:space:]]');
+select * from ascii_tab where regexp_like(s,'[[:punct:]]');
+select * from ascii_tab where regexp_like(s,'[[:cntrl:]]');
+select * from ascii_tab where n=7;--唯一会发声的字符
