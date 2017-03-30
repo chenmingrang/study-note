@@ -23,6 +23,47 @@
 
 --优先级  圆括号 > 重复次数操作符 > 和 > 或
 
+select 'aaa' from dual where regexp_like('ftp','^(f|ht)tps?$');--aaa
+select 'aaa' from dual where regexp_like('ftps','^(f|ht)tps?$');--aaa
+select 'aaa' from dual where regexp_like('http','^(f|ht)tps?$');--aaa
+select 'aaa' from dual where regexp_like('https','^(f|ht)tps?$');--aaa
+
+--函数一览
+--regexp_count(src,pattern[,pos[,modifier]]);
+select regexp_count('aaasdadd','a') from dual;--4
+select regexp_count('aaasdadd','a',5) from dual;--1
+select regexp_count('aaasdadd','A',5) from dual;--0
+select regexp_count('aaasdadd','A',5,'i') from dual;--1
+
+--regexp_instr(src,pattern[,pos[,occur[,ret_opt[,modifier[,subexpr]]]]])
+select regexp_instr('aas20w0099','[0-9]+$',1,1) from dual;--7
+select regexp_instr('aas20w0099','[0-9]$',1,1) from dual;--10
+select regexp_instr('aas20w0099','[0-9]',1,1) from dual;--4
+--The next statement returns the position in the source string of the first character in the fourth subexpression, which is '78':
+SELECT REGEXP_INSTR('1234567890', '(123)(4(56)(78))', 1, 1, 0, 'i', 4) "REGEXP_INSTR" FROM DUAL;--7
+
+--regexp_like(src,pattern[,modifier])
+select 'aaa' from dual where regexp_like('asdcaa','a{2}');--aaa
+select 'aaa' from dual where regexp_like('asdcaa','A{2}');--空
+select 'aaa' from dual where regexp_like('asdcaa','A{2}','i');--aaa
+
+--regexp_substr(src,pattern[,pos[,occur[,modifier[,subexpr]]]])
+select regexp_substr('aas20w0099','[0-9]+$',1,1) from dual;--0099
+select regexp_substr('aas20w0099','[0-9]+',1,1) from dual;--20
+select regexp_substr('aas20w0099','[0-9]+',1,2) from dual;--0099
+select regexp_substr('aas20w0099','[0-9]',1,1) from dual;--2
+
+--regex_replace(src,pattern[,replace_str[,pos[,occur[,modifier]]]])
+select regexp_replace('aasddeade','a','#') from dual;--##sdde#de
+select regexp_replace('aasddeade','a+','#') from dual;--#sdde#de 贪婪模式
+select regexp_replace('aasddeade','a+?','#') from dual;--##sdde#de 非贪婪模式
+select regexp_replace('aasddeade','a+','#',1,1) from dual;--#sddeade
+select regexp_replace('aasddeade','a+?','#',1,1) from dual;--#asddeade
+select regexp_replace('aasddeade','A+','#',1,1,'i') from dual;--#sddeade
+
+
+
+
 create table ascii_tab (n number(5),s varchar2(4));
 insert into ascii_tab select rownum-1,chr(rownum-1) from dual connect by
 rownum<=129 union select 255,chr(255) from dual;
