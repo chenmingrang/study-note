@@ -1,0 +1,104 @@
+--单表统计函数
+select count(*) from emp;
+select job,sum(sal) from emp group by job order by 1;
+select deptno,max(hiredate),min(hiredate) from emp group by deptno;
+select trunc(hiredate,'yyyy'),count(distinct deptno),count(*) from emp where sal>500 group by  trunc(hiredate,'yyyy');
+select deptno,listagg(ename,'##') within group(order by empno) from emp group by deptno;
+
+
+--多表关联统计结果
+select grade,sum(sal) from emp,salgrade where sal between losal and hisal group by grade order by grade;
+
+select deptno,count(*),count(empno) from emp right join dept using(deptno) group by deptno;
+
+select e.deptno,s.grade,count(*),min(sal),max(sal) from emp e,salgrade s,dept d 
+where sal between losal and hisal and e.deptno=d.deptno group by e.deptno,s.grade order by 1,2;
+
+select * from emp,salgrade where sal between losal and hisal order by deptno,sal;
+
+
+--分组求和统计
+select deptno,ename,sal,grade from emp e,salgrade s where e.sal between s.losal and s.hisal;
+
+select e.deptno,grade,count(*) from emp e,salgrade s 
+where sal between losal and hisal group by e.deptno,grade order by 1,2;
+
+--rollup
+select e.deptno,grade,count(*) from emp e,salgrade s 
+where e.sal between losal and hisal group by rollup(e.deptno,s.grade) order by deptno,grade;
+
+--cube
+select e.deptno,grade,count(*) from emp e,salgrade s 
+where e.sal between losal and hisal group by cube(e.deptno,s.grade) order by deptno,grade;
+
+--rollup部分分组字段,相比rollup(e.deptno,s.grade)少一条同的汇总
+select e.deptno,grade,count(*) from emp e,salgrade s 
+where e.sal between losal and hisal group by e.deptno,rollup(s.grade) order by deptno,grade;
+
+--grouping sets
+
+select e.deptno,grade,count(*) from emp e,salgrade s where sal between losal and hisal 
+group by grouping sets((e.deptno,s.grade),(s.grade)) order by 1,2;
+--||（等价）--
+select e.deptno,grade,count(*) from emp e,salgrade s where sal between losal and hisal 
+group by rollup(e.deptno),s.grade order by 1,2;
+
+
+select e.deptno,grade,count(*) from emp e,salgrade s where sal between losal and hisal 
+group by grouping sets(e.deptno,s.grade) order by 1,2;
+
+
+--基本等价的转换
+
+select e.deptno,grade,count(*) from emp e,salgrade s where sal between losal and hisal 
+group by grouping sets(e.deptno,s.grade) order by 1,2;
+--||--
+select e.deptno,null grade,count(*) from emp e,salgrade s where sal between losal and hisal 
+group by e.deptno
+union all
+select null deptno,grade,count(*) from emp e,salgrade s where sal between losal and hisal 
+group by grade order by 1,2;
+
+--注意事项
+--1.rollup、cube、grouping sets可以简化sql的编写，但是效率不高
+--2.同样的功能用多个group by语句union all去实现反而效率会更快
+
+
+--group函数--函数清单
+--group_id() 区分相同分组标准的分组统计结果，有n组，返回的数字从0到n-1
+--grouping(expr) 若是expr的汇总，则返回1，否则返回0
+--grouping_id(expr1,expr2,expr3...) 返回值的范围为 0~power(2,n)-1;为相应位返回结果组成的二进制数值
+
+select group_id() gid,e.deptno,count(*) from emp e,salgrade s where e.sal between losal and hisal 
+group by cube(e.deptno,e.deptno) order by 2,1;
+
+select grouping(grade) grade_id,grouping(e.deptno) id_deptno,grouping_id(grade) grade_id2,
+       grouping_id(e.deptno) id_deptno2,grouping_id(grade,deptno) grade_deptno,
+       grouping_id(deptno,grade) deptno_grade,e.deptno,s.grade,count(*)
+  from emp e,salgrade s 
+ where sal between losal and hisal
+group by cube(deptno,grade) order by deptno,grade; 
+
+
+--分组求和行列转换
+with t as (select grouping_id(e.deptno,grade) gid_dg,e.deptno,grade,count(*) cnt  
+             from emp e,salgrade s 
+            where sal between losal and hisal
+         group by cube(deptno,grade) order by deptno,grade),
+     u as (select decode(gid_dg,2,99,3,99,deptno)deptno,decode(gid_dg,1,cnt,3,cnt) subtotal,decode(grade,1,cnt) sg1,
+                  decode(grade,2,cnt)sg2,decode(grade,3,cnt)sg3,decode(grade,4,cnt)sg4,decode(grade,5,cnt)sg5 
+             from t)
+select deptno,max(subtotal) subtotal,max(sg1) sg1,max(sg2)sg2,max(sg3)sg3,max(sg4)sg4,max(sg5)sg5 
+  from u group by deptno order by deptno;
+
+
+--sql(pivot)
+with t as (select grouping_id(e.deptno,grade) gid_dg,e.deptno,grade,count(*) cnt  
+             from emp e,salgrade s 
+            where sal between losal and hisal
+         group by cube(deptno,grade) order by deptno,grade),
+     u as (select decode(gid_dg,2,99,3,99,deptno) deptno,decode(gid_dg,1,9,3,9,grade) grade,cnt from t)
+select * from (select * from u) pivot (sum(cnt) cnt for grade in (9,1,2,3,4,5)) order by deptno;
+
+
+
