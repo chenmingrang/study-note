@@ -1,0 +1,90 @@
+/*树
+     1.是由n个有限节点组成具有层次关系的集合
+     2.形状像一棵倒挂的树，也就是说它是根朝上，而叶朝下
+  特征
+     1.每个节点有零个或多个子节点
+     2.没有前驱的节点称为根节点
+     3.每一个非根节点有且只有一个父节点
+     4.除了根节点外。每个子节点可以分为m个不相交的子树
+  林
+     一组树的集合称为林
+*/
+--以员工表为例
+select empno,ename,job,mgr,deptno from emp order by deptno,1;
+
+--查询职位为总裁的雇员及其下属的相关信息
+select empno,ename,job,mgr,deptno,level from emp start with mgr is null connect by prior empno = mgr;
+
+--格式化树
+select empno,lpad('|-',(level)*2,' ')||ename ename,job,deptno,level
+from emp connect by prior empno = mgr start with mgr is null;
+
+--下级查询上级
+select empno,lpad('|-',level*2,' ')||ename ename,job,deptno,mgr,level 
+from emp start with empno=7788 connect by empno = prior mgr 
+
+--查上下级
+  --level的大小并不代表真实的父子关系
+  --level的大小只是表示起点开始的树的层级
+select empno,lpad('|-',level*2,' ')||ename ename,job,mgr,deptno,level,
+       case when prior empno = mgr then 0 else 1 end flag 
+  from emp start with empno=7788 connect by nocycle prior empno = mgr or empno = prior mgr; 
+
+--用途  构造函数
+--1.等差数列
+select rownum rn from dual connect by rownum < 5;
+select rownum+5 rn from dual connect by rownum < 5;
+select rownum*5-4 rn from dual connect by rownum < 5;
+--2.等比数列
+select power(2,rownum) rn from dual connect by rownum < 32;
+
+--用途 构造序列
+--例子
+/*有11种不同的方法可以将20表示成8个正奇数之和，列出所有的可能*/
+with t as (select rownum*2-1 rn from dual connect by rownum<8)
+select * from t t1,t t2,t t3,t t4,t t5,t t6,t t7,t t8
+where t1.rn+t2.rn+t3.rn+t4.rn+t5.rn+t6.rn+t7.rn+t8.rn=20
+and t1.rn<=t2.rn and t2.rn<=t3.rn and t3.rn<=t4.rn and t4.rn<=t5.rn 
+and t5.rn<=t6.rn and t6.rn<=t7.rn and t7.rn<=t8.rn
+
+
+--连接字符串 sys_connect_by_path(column,char)
+--  column和char可以是varchar2、char、nchar、nvarchar2中的一种
+--  返回值是varchar2
+--  返回值的字符集与column的字符集是一样的
+--  只能用于层次查询之中
+select ename,empno,sys_connect_by_path(ename,'/') name_path,mgr,deptno,level 
+from emp start with mgr is null connect by prior empno = mgr;
+
+
+--将二十六个字母连接起来
+with t as (select ascii('A')+rownum-1 rn from dual connect by rownum <= 26),
+    t2 as (select sys_connect_by_path(chr(rn),' ') connects from t connect by rn = prior rn+1 start with chr(rn) = 'A')
+select regexp_replace(max(connects),' ') from t2;
+
+
+--connect_by_isleaf 是否是子节点
+select empno,job,deptno,lpad('|-',level*2,' ')||ename,level,decode(connect_by_isleaf,0,'FALSE',1,'TRUE') isleaf
+from emp start with mgr is null connect by prior empno = mgr;
+
+
+--connect_by_root 根节点对应的值
+select connect_by_root ename "ROOTNAME",empno,job,deptno,lpad('|-',level*2,' ')||ename,level,
+       decode(connect_by_isleaf,0,'FALSE',1,'TRUE') isleaf
+from emp start with mgr is null connect by prior empno = mgr;
+
+
+--order siblings by--同级节点之间进行排序
+select ename,empno,job,deptno,lpad('|-',level*2,' ')||ename,level,
+       decode(connect_by_isleaf,0,'FALSE',1,'TRUE') isleaf
+from emp start with mgr is null connect by prior empno = mgr
+order siblings by ename;
+
+/*========================================禁忌========================================
+   1.不要给connect by 安排较复杂的任务
+     --oracle采取的执行计划可能导致结果的错误
+     --可能会占用大量的内存
+   2.带过滤条件的的递归类的操作通常不要用connect by去实现
+     --在碰到可以停止当前循环进入下一轮循环的情况下，connect by无法做到通常递归算法那样跳出当前循环，
+       因此导致效率低下
+*/
