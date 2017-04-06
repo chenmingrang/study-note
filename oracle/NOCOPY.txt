@@ -1,0 +1,17 @@
+DECLARE
+   n NUMBER := 10;
+   PROCEDURE do_something (
+      n1 IN NUMBER,
+      n2 IN OUT NUMBER,
+      n3 IN OUT NOCOPY NUMBER) IS
+   BEGIN
+      n2 := 20;--返回改变n的值
+      DBMS_OUTPUT.put_line(n1);  -- prints 10，传入的参数不能进行赋值
+      n3 := 30;--传入的是引用，值立马改变
+      DBMS_OUTPUT.put_line(n1);  -- prints 30
+   END;
+BEGIN
+   do_something(n, n, n);
+   DBMS_OUTPUT.put_line(n);  -- prints 20，n2在过程结束时将20赋值给n
+END;
+/
