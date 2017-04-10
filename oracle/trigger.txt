@@ -1,0 +1,99 @@
+CREATE OR REPLACE TRIGGER t_salary_changes
+  BEFORE DELETE OR INSERT OR UPDATE ON emp
+  FOR EACH ROW
+WHEN (NEW.EMPNO > 0)
+DECLARE
+    sal_diff number;
+BEGIN
+    sal_diff  := :NEW.SAL  - :OLD.SAL;
+    dbms_output.put_line('Old salary: ' || :OLD.sal);
+    dbms_output.put_line('New salary: ' || :NEW.sal);
+    dbms_output.put_line('Difference ' || sal_diff);
+END;
+/
+
+create table emp_his as select * from emp where 1=2;
+
+CREATE OR REPLACE TRIGGER t_record_del_emp 
+         BEFORE DELETE ON emp FOR EACH ROW
+    BEGIN
+    --   将修改前数据插入到日志记录表 del_emp ,以供监督使用。
+     INSERT INTO emp_his(deptno , empno, ename , job ,mgr , sal      , comm , hiredate )
+        VALUES( :old.deptno, :old.empno, :old.ename , :old.job,
+               :old.mgr, :old.sal, :old.comm, :old.hiredate );
+END; 
+/
+
+create or replace trigger t_test 
+   before delete on emp for each row
+begin
+   INSERT INTO emp_his(deptno , empno, ename , job ,mgr , sal      , comm , hiredate )
+        VALUES( :old.deptno, :old.empno, :old.ename , :old.job,
+               :old.mgr, :old.sal, :old.comm, :old.hiredate );
+   commit;
+   /*
+    ORA-04092: COMMIT 不能在触发器中
+    ORA-06512: 在 "LEARN.T_TEST", line 5
+    ORA-04088: 触发器 'LEARN.T_TEST' 执行过程中出错
+   */
+end;
+/
+
+CREATE OR REPLACE TRIGGER t_test2
+    	   BEFORE update ON emp
+         REFERENCING new AS nn  old AS oo
+         FOR EACH ROW
+         WHEN (oo.sal > 2000)
+     BEGIN
+ 	     dbms_output.put_line(:nn.sal||'------'||:oo.sal);
+END;
+/
+
+
+-- update emp set sal=15600 where empno=7788;
+CREATE OR REPLACE TRIGGER t_restrict_salary
+  BEFORE INSERT OR UPDATE OF sal ON emp
+    FOR EACH ROW
+    BEGIN
+      IF  NOT (:NEW.job IN ('PRESIDENT', 'MANAGER'))
+          AND :NEW.sal > 15000
+      THEN
+        RAISE_APPLICATION_ERROR (-20202,'员工不能赚到这么多薪水');
+     END IF;
+END;
+/
+
+
+CREATE OR REPLACE TRIGGER t_opetime_emp
+ BEFORE INSERT or update or delete ON emp
+ BEGIN
+  IF (TO_CHAR(SYSDATE,'DY') IN ('星期六','星期日')) OR
+     (TO_CHAR(SYSDATE,'HH24:MM') NOT BETWEEN '08:00' AND '18:00') 
+  THEN RAISE_APPLICATION_ERROR (-20500, '你只能在工作时间对emp表执行操作.');
+  END IF;
+END;
+/
+
+
+--当增加或删除职员时，由触发器完成对该employee_count的更新。
+--先关掉其他触发器
+create table emptotal as select deptno,count(empno) emp_count from emp group by deptno;
+CREATE OR REPLACE TRIGGER t_emp_tgr
+  AFTER DELETE OR INSERT OR UPDATE ON emp
+  FOR EACH ROW
+declare
+  v_count pls_integer;
+BEGIN
+   if inserting then
+       select count(:new.deptno) into v_count from emptotal where deptno =:new.deptno;
+       if v_count>0 then 
+          update emptotal set emp_count= emp_count+1 where deptno =:new.deptno;
+       else
+          insert into emptotal (deptno,emp_count) values (:new.deptno,1);
+       end if;
+   end if;
+   if deleting then    
+       update emptotal set emp_count= emp_count-1 where deptno =:old.deptno;
+   end if;
+ END;
+/
