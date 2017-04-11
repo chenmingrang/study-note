@@ -97,3 +97,20 @@ BEGIN
    end if;
  END;
 /
+
+
+create table log_trig_table(user_id varchar2(30),log_date date,action varchar2(30));
+CREATE OR REPLACE TRIGGER t_login_trig
+   AFTER LOGON  ON  SCHEMA
+BEGIN
+ INSERT INTO log_trig_table(user_id, log_date, action)
+ VALUES (USER, SYSDATE, 'Logging on');
+END;
+/
+
+--生效
+alter trigger t_login_trig enable;
+--失效
+alter trigger t_login_trig disable;
+--一次操作表上所有的触发器
+ALTER TABLE [schema.]table_name {ENABLE|DISABLE} ALL TRIGGERS; 
