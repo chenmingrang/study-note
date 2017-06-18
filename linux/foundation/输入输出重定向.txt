@@ -1,0 +1,85 @@
+################重定向符号：
+	 stdin
+		  > 或 1> : 输出重定向，把前面输出的东西输入到后面的文件中，清除原有内容
+		  >> 或 1>>: 追加输出重定向，把前面输出的内容追加到文件的末尾
+
+	 stdout
+		  < 或 0< : 输入重定向，用于改变命令的输入，后面指定输入的内容，前面跟文件名
+		  <<或0<<:追加重定向，后面跟字符串，用来表示“输入结束”，也可以用ctrl+d来结束输入
+			      cat >>/data/a.txt 0<<eof
+			      line1
+			      line2
+			      line3
+			      eof
+
+                              >a.txt  #清空a.txt的内容
+			      cat >>/data/a.txt
+			      line1
+			      line2
+			      line3
+			      <ctrl+d>
+
+
+	  stderr
+		   2> 错误重定向
+		   2>> 错误追加重定向
+
+		   [root@centOS6 data]# cat dddd 2>a.txt
+                   [root@centOS6 data]# cat a.txt 
+                   cat: dddd: No such file or directory
+
+
+		   [root@centOS6 data]# cat dddd >a.txt 
+		  cat: dddd: No such file or directory
+		  [root@centOS6 data]# cat a.txt 
+		  [root@centOS6 data]# 
+
+################将正确和错误的信息输出到同一个文件中去
+   （1）    echo testecho >a.txt 2>a.txt
+		 [root@centOS6 data]# echo testecho >a.txt 2>a.txt
+		 [root@centOS6 data]# cat a.txt 
+		 testecho
+		 [root@centOS6 data]# ech testecho >a.txt 2>a.txt 
+		 [root@centOS6 data]# cat a.txt 
+                 -bash: ech: command not found
+
+    （2）   ech testecho >a.txt 2>&1
+		[root@centOS6 data]# ech testecho >a.txt 2>&1
+		[root@centOS6 data]# cat a.txt 
+		-bash: ech: command not found
+    
+     （3）  echo test &>a.txt 
+		[root@centOS6 data]# echo test &>a.txt #正确和错误放在一个文件中
+		[root@centOS6 data]# cat a.txt 
+		test
+		[root@centOS6 data]# echo test &>>a.txt #正确和错误放在一个文件中
+		[root@centOS6 data]# cat a.txt 
+		test
+		test
+#清空a.txt的内容
+      >a.txt  
+
+
+################xargs  从标准输入获取内容创建和执行命令
+		[root@centOS6 data]# echo 1 2 3 4 5 6 7 8 9 >b.txt
+		[root@centOS6 data]# xargs -n 2 <b.txt  
+		1 2
+		3 4
+		5 6
+		7 8
+		9
+		[root@centOS6 data]# xargs -n 3 <b.txt  
+		1 2 3
+		4 5 6
+		7 8 9
+		[root@centOS6 data]# xargs -n 4 <b.txt  
+		1 2 3 4
+		5 6 7 8
+		9
+
+
+
+
+
+
+
