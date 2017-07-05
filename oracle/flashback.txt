@@ -1,0 +1,11 @@
+flashback table dm_ssxdtk to timestamp to_timestamp ('2017-07-05 12:12:20','yyyy-mm-dd hh24:mi:ss');
+alter table dm_ssxdtk enable row movement;
+select * from dm_ssxdtk for update;
+delete from dm_ssxdtk;
+
+select versions_starttime,versions_endtime, versions_xid,versions_operation
+from dm_ssxdtk versions
+between timestamp minvalue and maxvalue
+order by versions_starttime
+
+SELECT * FROM  sys.all_objects t where t.OBJECT_NAME = 'DM_SBBZL' and t.OBJECT_TYPE='TABLE'
