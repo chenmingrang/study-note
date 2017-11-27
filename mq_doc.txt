@@ -1,0 +1,64 @@
+定义队列管理器名称为QMGR，本地队列名称为Queue，服务器连接通道CHAN_SERVER_CON，监听端口为1414，死性队列QDEAD
+搭建MQ队列可以使用图形用户界面也可以使用命令进行，此处使用命令进行。
+1.创建MQ队列管理器，使用mqm用户登录MQ所在机器
+mqm@localhos ~>$crtmqm QMGR
+2.启动QMGR队列管理器
+mqm@localhos ~>$strmqm QMGR
+3.进入QMGR命令行
+mqm@localhos ~>$runmqsc QMGR
+4.定义一个本地队列Queue
+DEFINE QLOCAL ('Queue') DEFPSIST (YES) MAXDEPTH(100) REPLACE
+'Queue'为队列名称，至于使用单引号的原因是，如果在shell脚本中不加单引号的话，最后创建出来的会变成大写QUEUE.。
+DEFPSIST(YES)表示该队列为持久化队列，MAXDEPTH(100)代表该队列的最大深度为100，如果消息超过了100的话，则会被放入死性队列。
+5.在定义一个死性队列QDEAD
+DEFINE QLOCAL ('QDEAD') DEFPSIST (YES) MAXDEPTH(100) REPLACE
+6..给QMGR设置指定的死性队列，当消息无法到达指定的Queue中时，会被放入死性队列QDEAD
+ALTER QMGR DEADQ('QDEAD')
+7.定义服务器连接通道CHAN_SERVER_CON，该通道的用途是供应用程序连接的，应用程序通过服务器连接通道从而连接MQ。
+DEFINE CHANNEL('CHAN_SERVER_CON') CHLTYPE(SVRCONN) REPLACE
+8.定义监听器LISTENER.TCP，该端口1414应用程序连接时需要指定。
+DEFINE LISTENER('LISTENER.TCP') TRPTYPE(TCP) CONTROL(QMGR) PORT(1414) REPLACE
+9.启动监听器LISTENER.TCP
+START LISTENER('LISTENER.TCP')
+
+到此为止这个需求中的MQ队列管理器已经创建完毕了。如果在创建过程中出现错误，或者想停止队列管理器，或者想删除重新创建，则执行下述命令：
+1.删除前先停止队列管理器
+ctrl+c可以冲命令行跳出，或者输入end回车也可以。
+mqm@localhos ~>$endmqm QMGR 停止队列管理器
+mqm@localhos ~>$dspmq 查看当前队列管理器的执行状态，当队列管理器状态变为Ended normally时才能删除
+mqm@localhos ~>$dltmqm QMGR 删除队列管理器，它会级联删除该队列管理器中的队列和监听器等等。
+
+2.至于java如何与MQ通信，如何连接MQ队列此处不做过多的阐述了！
+
+
+--消息的发送和查看(取出)
+用/usr/mqm/samp/bin/amqsput命令就可以放入消息，格式为：
+amqsput Queue QMGR
+解释下：Queue是你要放入的队列名，QMGR是你要放入的队列管理器名。
+输入以上命令后就可以写入消息了，一下回车就是发送一条消息，两次回车就是退出。
+
+用/usr/mqm/samp/bin/amqsget命令就可以取消息，格式为
+amqsget Queue QMGR
+解释下：Queue是你要取消息的队列名，QMGR是你要取消息的队列管理器名。
+输入完命令后就会显示所有消息。
+不过要注意一点，命令行方式的输入和取消息有字节限制。
+
+
+
+--查看队列管理器信息
+runmqsc MQ名
+dis QMGR
+--增加用户认证
+CHAN_SERVER_CON 是通道的名字   SVRCONN 是通道的类型   mqm 是mq的用户  一般linux安装完mq后 都会自动出现mqm用户
+ALTER CHL(CHAN_SERVER_CON) CHLTYPE(SVRCONN) MCAUSER('mqm')
+
+--禁用用户通道验证
+ALTER QMGR CHLAUTH(DISABLED)
+
+--在V8中，与服务器的连接默认需要密码去认证，可以通过配置队列管理器的连接认证选项来解决
+  通过以下命令行指令，将连接认证选项中的SYSTEM.DEFAULT.AUTHINFO.IDPWOS的属性配置为OPTIONAL： 
+     ALTER AUTHINFO(SYSTEM.DEFAULT.AUTHINFO.IDPWOS) AUTHTYPE(IDPWOS) CHCKCLNT(OPTIONAL) 
+  或者直接将连接认证选项置为空，将其完全关闭，指令如下： 
+     ALTER QMGR CONNAUTH('') 
+在执行完上述两条命令中的任一条后，都需要刷新连接认证的缓存，指令如下： 
+REFRESH SECURITY TYPE(CONNAUTH) 
