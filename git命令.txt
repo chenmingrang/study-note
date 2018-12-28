@@ -135,7 +135,8 @@ $ git push -u origin master
 
 $ git merge --no-ff -m "merge with no-ff" dev
    --注意--no-ff参数，表示禁用Fast forward
-   --因为本次合并要创建一个新的commit，所以加上-m参数，把commit描述写进去。
+   --因为本次合并要创
+   建一个新的commit，所以加上-m参数，把commit描述写进去。
 
 
 
@@ -224,6 +225,11 @@ $ git merge --no-ff -m "merge with no-ff" dev
 
 
 
+/******************************提交空文件夹*****************************/
+find . -type d -empty -exec touch {}/.gitignore \;
 
+
+/******************************git status中文文件名编码问题解决*****************************/
+git config --global core.quotepath false
 
 
