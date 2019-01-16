@@ -233,3 +233,8 @@ find . -type d -empty -exec touch {}/.gitignore \;
 git config --global core.quotepath false
 
 
+
+/******************************git放弃本地修改，同步到服务器*****************************/
+$ git fetch --all
+$ git reset --hard origin/master 
+$ git pull
